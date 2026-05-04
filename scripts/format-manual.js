@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 /**
- * Manual Crafter — .docx formatter
+ * Manual Crafter — .docx formatter (v2)
  * Usage: node format-manual.js <project_directory> [--workbook]
  *
- * Reads: manual-dna.md, voice-profile.md, edited/s*-final.md
+ * Reads: manual-dna.md, edited/s*-final.md
  * Writes: output/[Manual Title].docx (and optionally output/[Manual Title] — Workbook.docx)
+ *
+ * Layout:
+ *   Section 1 — Cover page (no header/footer)
+ *   Section 2 — Table of Contents + all chapters (header: ministry name, footer: title · page number)
  */
 
 const {
   Document, Packer, Paragraph, TextRun, HeadingLevel,
-  AlignmentType, PageBreak, TableOfContents, StyleLevel,
-  NumberFormat, convertInchesToTwip, PageNumber, Footer,
-  Header, SectionType, BorderStyle, Table, TableRow,
-  TableCell, WidthType
+  AlignmentType, PageBreak, TableOfContents,
+  convertInchesToTwip, PageNumber, Footer, Header, SectionType,
 } = require('docx');
 const fs = require('fs');
 const path = require('path');
@@ -34,11 +36,10 @@ function readManualDna(dir) {
   if (!fs.existsSync(dnaPath)) throw new Error(`manual-dna.md not found at ${dnaPath}`);
   const content = fs.readFileSync(dnaPath, 'utf8');
   return {
-    title: extractField(content, 'Title') || 'Untitled Manual',
-    subtitle: extractField(content, 'Subtitle') || '',
-    topic: extractField(content, 'Topic') || '',
-    audience: extractField(content, 'Target Audience') || '',
-    ministry: 'Encounter Church',
+    title:      extractField(content, 'Title')          || 'Untitled Manual',
+    subtitle:   extractField(content, 'Subtitle')       || '',
+    manualType: extractField(content, 'Manual Type')    || 'Manual',
+    ministry:   'Encounter Church',
   };
 }
 
@@ -62,60 +63,117 @@ function readSections(dir) {
   }));
 }
 
-// ── Parse markdown to docx elements ──────────────────────────────────────────
+// ── Inline markdown parser ────────────────────────────────────────────────────
 
-function parseSection(rawContent, workbook = false) {
-  // Strip metadata comments
-  const content = rawContent
-    .replace(/<!--.*?-->/gs, '')
-    .trim();
+function parseInline(text) {
+  const runs = [];
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  for (const part of parts) {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      runs.push(new TextRun({ text: part.slice(2, -2), bold: true }));
+    } else if (part.startsWith('*') && part.endsWith('*')) {
+      runs.push(new TextRun({ text: part.slice(1, -1), italics: true }));
+    } else if (part) {
+      runs.push(new TextRun({ text: part }));
+    }
+  }
+  return runs;
+}
 
+// ── Workbook blank insertion ──────────────────────────────────────────────────
+
+function applyBlanks(text, startCounter) {
+  const keys = [];
+  let counter = startCounter + 1;
+  const result = text.replace(/\*\*([^*]+)\*\*/g, (_, term) => {
+    keys.push({ number: counter, answer: term });
+    return `_______________ ${counter++}`;
+  });
+  return {
+    para: new Paragraph({ children: parseInline(result), spacing: { before: 140, after: 140 } }),
+    keys,
+  };
+}
+
+// ── Section markdown parser ───────────────────────────────────────────────────
+
+function parseSection(rawContent, sectionIndex, workbook = false) {
+  const content = rawContent.replace(/<!--.*?-->/gs, '').trim();
   const lines = content.split('\n');
   const elements = [];
-  let answerKey = [];
+  const answerKey = [];
   let blankCounter = 0;
+  let firstHeading = true;
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
     if (!line) continue;
 
     if (line.startsWith('## ')) {
-      elements.push(new Paragraph({
-        text: line.replace(/^## /, ''),
-        heading: HeadingLevel.HEADING_2,
-        spacing: { before: 400, after: 200 },
-      }));
+      const titleText = line.replace(/^## /, '');
+      if (firstHeading) {
+        // First ## = chapter title → H1 with section number
+        firstHeading = false;
+        elements.push(new Paragraph({
+          text: `${sectionIndex}.   ${titleText}`,
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 0, after: 400 },
+        }));
+      } else {
+        elements.push(new Paragraph({
+          text: titleText,
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 400, after: 200 },
+        }));
+      }
+
     } else if (line.startsWith('### ')) {
       elements.push(new Paragraph({
         text: line.replace(/^### /, ''),
         heading: HeadingLevel.HEADING_3,
-        spacing: { before: 240, after: 160 },
+        spacing: { before: 280, after: 140 },
       }));
-    } else if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**') && !line.endsWith('**')) {
-      // Italic scripture line
-      const text = line.replace(/^\*|\*$/g, '');
+
+    } else if (line.startsWith('- ')) {
       elements.push(new Paragraph({
-        children: [new TextRun({ text, italics: true, font: 'Georgia', size: 22 })],
-        spacing: { before: 160, after: 160 },
-        indent: { left: convertInchesToTwip(0.4) },
-      }));
-    } else if (line.startsWith('- ') || line.startsWith('* ')) {
-      elements.push(new Paragraph({
-        text: line.replace(/^[-*] /, ''),
+        text: line.replace(/^- /, ''),
         bullet: { level: 0 },
         spacing: { before: 80, after: 80 },
       }));
+
+    } else if (line.startsWith('*"')) {
+      // Standalone scripture block — indented, italic formatting preserved
+      elements.push(new Paragraph({
+        children: parseInline(line),
+        spacing: { before: 240, after: 240 },
+        indent: {
+          left: convertInchesToTwip(0.5),
+          right: convertInchesToTwip(0.5),
+        },
+      }));
+
+    } else if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**')) {
+      // Short single-line italic (scripture without a reference appendage)
+      elements.push(new Paragraph({
+        children: [new TextRun({ text: line.replace(/^\*|\*$/g, ''), italics: true })],
+        spacing: { before: 240, after: 240 },
+        indent: {
+          left: convertInchesToTwip(0.5),
+          right: convertInchesToTwip(0.5),
+        },
+      }));
+
     } else {
-      // Regular paragraph — handle workbook blanks
+      // Regular paragraph with inline formatting
       if (workbook) {
         const { para, keys } = applyBlanks(line, blankCounter);
         blankCounter += keys.length;
-        answerKey = answerKey.concat(keys);
+        answerKey.push(...keys);
         elements.push(para);
       } else {
         elements.push(new Paragraph({
           children: parseInline(line),
-          spacing: { before: 120, after: 120 },
+          spacing: { before: 140, after: 140 },
         }));
       }
     }
@@ -124,103 +182,146 @@ function parseSection(rawContent, workbook = false) {
   return { elements, answerKey };
 }
 
-function parseInline(text) {
-  const runs = [];
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
-  for (const part of parts) {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      runs.push(new TextRun({ text: part.slice(2, -2), bold: true, font: 'Georgia', size: 24 }));
-    } else if (part.startsWith('*') && part.endsWith('*')) {
-      runs.push(new TextRun({ text: part.slice(1, -1), italics: true, font: 'Georgia', size: 24 }));
-    } else if (part) {
-      runs.push(new TextRun({ text: part, font: 'Georgia', size: 24 }));
-    }
+// ── Cover page ────────────────────────────────────────────────────────────────
+
+function buildCoverElements(dna) {
+  const els = [];
+
+  els.push(new Paragraph({ text: '', spacing: { before: 2160 } }));
+
+  // Ministry name — small, spaced, muted
+  els.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 240 },
+    children: [new TextRun({
+      text: dna.ministry.toUpperCase(),
+      font: 'Georgia',
+      size: 20,
+      color: '999999',
+      characterSpacing: 280,
+    })],
+  }));
+
+  // Manual type label
+  els.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 720 },
+    children: [new TextRun({
+      text: dna.manualType.toUpperCase(),
+      font: 'Georgia',
+      size: 18,
+      color: 'bbbbbb',
+      characterSpacing: 360,
+    })],
+  }));
+
+  // Title — large and bold
+  els.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 0, after: 360 },
+    children: [new TextRun({
+      text: dna.title,
+      font: 'Georgia',
+      size: 72,
+      bold: true,
+      color: '1a1a2e',
+    })],
+  }));
+
+  // Subtitle if meaningful
+  const subtitle = dna.subtitle && dna.subtitle !== '[Fill in]' ? dna.subtitle.trim() : '';
+  if (subtitle) {
+    els.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 0, after: 0 },
+      children: [new TextRun({
+        text: subtitle,
+        font: 'Georgia',
+        size: 32,
+        italics: true,
+        color: '666666',
+      })],
+    }));
   }
-  return runs;
+
+  return els;
 }
 
-// Workbook blank insertion — replaces theologically significant phrases
-function applyBlanks(text, startCounter) {
-  // Target: words/phrases in bold (**term**) become blanks in workbook mode
-  const keys = [];
-  let counter = startCounter + 1;
-  const result = text.replace(/\*\*([^*]+)\*\*/g, (_, term) => {
-    keys.push({ number: counter, answer: term });
-    return `_______________ ${counter++}`;
+// ── Table of contents ─────────────────────────────────────────────────────────
+
+function buildTocElements() {
+  return [
+    new Paragraph({
+      text: 'Contents',
+      heading: HeadingLevel.HEADING_1,
+      pageBreakBefore: true,
+      spacing: { before: 0, after: 400 },
+    }),
+    new TableOfContents('Contents', {
+      hyperlink: true,
+      headingStyleRange: '1-1',
+    }),
+    new Paragraph({ children: [new PageBreak()] }),
+  ];
+}
+
+// ── Header / Footer ───────────────────────────────────────────────────────────
+
+function makeHeader(ministry) {
+  return new Header({
+    children: [
+      new Paragraph({
+        alignment: AlignmentType.RIGHT,
+        spacing: { before: 0, after: 0 },
+        children: [new TextRun({ text: ministry, font: 'Georgia', size: 17, color: 'bbbbbb' })],
+      }),
+    ],
   });
-  const children = parseInline(result);
-  return {
-    para: new Paragraph({ children, spacing: { before: 120, after: 120 } }),
-    keys,
-  };
+}
+
+function makeFooter(title) {
+  return new Footer({
+    children: [
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 0, after: 0 },
+        children: [
+          new TextRun({ text: `${title}  ·  `, font: 'Georgia', size: 17, color: 'aaaaaa' }),
+          new TextRun({ children: [PageNumber.CURRENT], font: 'Georgia', size: 17, color: 'aaaaaa' }),
+        ],
+      }),
+    ],
+  });
 }
 
 // ── Build document ────────────────────────────────────────────────────────────
 
 function buildDocument(dna, sections, workbook = false) {
-  const allElements = [];
+  const contentElements = [];
   const allAnswers = [];
 
-  // Cover page
-  allElements.push(
-    new Paragraph({
-      text: dna.ministry,
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 1800, after: 400 },
-      children: [new TextRun({ text: dna.ministry, font: 'Georgia', size: 28, color: '666666' })],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 400, after: 200 },
-      children: [new TextRun({ text: dna.title, font: 'Georgia', size: 56, bold: true })],
-    }),
-    ...(dna.subtitle ? [new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 200, after: 800 },
-      children: [new TextRun({ text: dna.subtitle, font: 'Georgia', size: 32, italics: true })],
-    })] : []),
-    new Paragraph({ children: [new PageBreak()] }),
-  );
+  contentElements.push(...buildTocElements());
 
-  // Introduction heading
-  allElements.push(
-    new Paragraph({
-      text: 'Introduction',
-      heading: HeadingLevel.HEADING_1,
-      spacing: { before: 600, after: 300 },
-    }),
-    new Paragraph({
-      children: [new TextRun({
-        text: `This manual provides foundational teaching on the subject of ${dna.topic}. It is intended for ${dna.audience || 'believers'} seeking to grow in theological understanding and practical application.`,
-        font: 'Georgia',
-        size: 24,
-      })],
-      spacing: { before: 120, after: 400 },
-    }),
-    new Paragraph({ children: [new PageBreak()] }),
-  );
-
-  // Sections
-  for (const section of sections) {
-    const { elements, answerKey } = parseSection(section.content, workbook);
-    allElements.push(...elements);
-    allElements.push(new Paragraph({ children: [new PageBreak()] }));
+  for (let i = 0; i < sections.length; i++) {
+    if (i > 0) contentElements.push(new Paragraph({ children: [new PageBreak()] }));
+    const { elements, answerKey } = parseSection(sections[i].content, i + 1, workbook);
+    contentElements.push(...elements);
     allAnswers.push(...answerKey);
   }
 
-  // Answer key (workbook only)
   if (workbook && allAnswers.length > 0) {
-    allElements.push(
+    contentElements.push(
+      new Paragraph({ children: [new PageBreak()] }),
       new Paragraph({
         text: 'Answer Key',
         heading: HeadingLevel.HEADING_1,
-        spacing: { before: 600, after: 300 },
+        spacing: { before: 0, after: 360 },
       }),
       ...allAnswers.map(({ number, answer }) =>
         new Paragraph({
           children: [
-            new TextRun({ text: `${number}.  `, bold: true, font: 'Georgia', size: 22 }),
-            new TextRun({ text: answer, font: 'Georgia', size: 22 }),
+            new TextRun({ text: `${number}.  `, bold: true, size: 22 }),
+            new TextRun({ text: answer, size: 22 }),
           ],
           spacing: { before: 80, after: 80 },
         })
@@ -228,18 +329,48 @@ function buildDocument(dna, sections, workbook = false) {
     );
   }
 
+  const pageMargins = { top: 1440, bottom: 1440, left: 1440, right: 1440 };
+
   return new Document({
     styles: {
       default: {
-        document: { run: { font: 'Georgia', size: 24 } },
+        document: {
+          run: { font: 'Georgia', size: 24 },
+          paragraph: { spacing: { line: 336, lineRule: 'auto' } },
+        },
+        heading1: {
+          run: { font: 'Georgia', size: 44, bold: true, color: '1a1a2e' },
+          paragraph: { spacing: { before: 600, after: 300 }, keepNext: true },
+        },
+        heading2: {
+          run: { font: 'Georgia', size: 30, bold: true, color: '333355' },
+          paragraph: { spacing: { before: 440, after: 200 }, keepNext: true },
+        },
+        heading3: {
+          run: { font: 'Georgia', size: 24, bold: true, italics: true, color: '555566' },
+          paragraph: { spacing: { before: 280, after: 120 }, keepNext: true },
+        },
       },
     },
-    sections: [{
-      properties: {
-        page: { margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 } },
+    sections: [
+      // Cover — clean page, no header/footer
+      {
+        properties: {
+          type: SectionType.NEXT_PAGE,
+          page: { margin: pageMargins },
+        },
+        headers: { default: new Header({ children: [] }) },
+        footers: { default: new Footer({ children: [] }) },
+        children: buildCoverElements(dna),
       },
-      children: allElements,
-    }],
+      // TOC + chapters — ministry header, title·page footer
+      {
+        properties: { page: { margin: pageMargins } },
+        headers: { default: makeHeader(dna.ministry) },
+        footers: { default: makeFooter(dna.title) },
+        children: contentElements,
+      },
+    ],
   });
 }
 
@@ -252,14 +383,12 @@ async function main() {
   const outputDir = path.join(projectDir, 'output');
   fs.mkdirSync(outputDir, { recursive: true });
 
-  // Reading version
   const doc = buildDocument(dna, sections, false);
   const buffer = await Packer.toBuffer(doc);
   const outputPath = path.join(outputDir, `${dna.title}.docx`);
   fs.writeFileSync(outputPath, buffer);
   console.log(`✓ Reading version: ${outputPath}`);
 
-  // Workbook version
   if (workbookMode) {
     const workbookDoc = buildDocument(dna, sections, true);
     const workbookBuffer = await Packer.toBuffer(workbookDoc);

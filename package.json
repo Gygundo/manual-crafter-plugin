@@ -1,6 +1,6 @@
 {
   "name": "manual-crafter-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Builds theological training manuals from sermon transcripts",
   "directories": {
     "test": "tests"
