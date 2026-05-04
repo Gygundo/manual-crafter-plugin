@@ -1,0 +1,18 @@
+{
+  "name": "manual-crafter-plugin",
+  "metadata": {
+    "description": "Manual Crafter marketplace — installs the manual-crafter plugin, a multi-skill pipeline that builds topical theological training manuals from sermon transcripts or from scratch."
+  },
+  "owner": {
+    "name": "David",
+    "email": "david@encounterchurch.co.za"
+  },
+  "plugins": [
+    {
+      "name": "manual-crafter",
+      "source": "./",
+      "description": "Builds topical theological training manuals from sermon transcripts or from scratch.",
+      "strict": true
+    }
+  ]
+}
