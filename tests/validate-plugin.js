@@ -67,6 +67,8 @@ check('format-manual.js requires docx', script?.includes("require('docx')"));
 check('format-manual.js has buildDocument function', script?.includes('function buildDocument'));
 check('format-manual.js has readManualDna function', script?.includes('function readManualDna'));
 check('format-manual.js has readSections function', script?.includes('function readSections'));
+check('format-manual.js has parseSection function', script?.includes('function parseSection'));
+check('format-manual.js has parseInline function', script?.includes('function parseInline'));
 
 console.log('\n── Fixtures ──');
 check('tiny-manual fixture exists', fileExists('fixtures/tiny-manual'));
