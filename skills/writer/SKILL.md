@@ -11,6 +11,10 @@ Stage 2 of the pipeline. Writes one section at a time in pastoral teaching voice
 
 ## 1. Parse Arguments
 
+Arguments format: `[project_directory] | section: [N] | title: [section title]`
+
+If arguments cannot be parsed into three parts (directory, section number, title), report: 'Invalid arguments. Expected: [project_directory] | section: [N] | title: [section title]' and exit.
+
 Extract:
 - `project_directory` — absolute path
 - `section_number` — integer (1-based)

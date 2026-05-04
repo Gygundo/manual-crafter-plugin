@@ -9,6 +9,8 @@ allowed-tools: Read, Write, Bash, Grep, Glob
 
 Stage 1 of the pipeline. Generates a themed section structure for the manual topic. Called by the orchestrator with the project directory path as `$ARGUMENTS`.
 
+**Mode detection:** If `$ARGUMENTS` contains `--populate-dna`, skip directly to Section 5. Do not execute Sections 1-4.
+
 ## 1. Read Context Documents
 
 Read all of the following:
@@ -52,7 +54,7 @@ Write `[project_directory]/outline.md`:
 **Theme:** [One sentence describing what this section covers]
 **Theological angle:** [Which aspect of the church's DNA this section draws on]
 **Key scripture(s):** [1-3 scriptures this section will anchor to]
-**Estimated length:** [400-600 words]
+**Estimated length:** [400-600 words, excluding scripture block]
 
 ## Section 2: [Title]
 

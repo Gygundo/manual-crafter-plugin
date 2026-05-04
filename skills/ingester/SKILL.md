@@ -13,6 +13,8 @@ Stage 0 of the pipeline. Reads source material from `[project_directory]/sources
 
 Arguments format: `[project_directory] | topic: [manual topic]`
 
+If arguments cannot be parsed into exactly two parts separated by ` | topic: `, report an error: 'Invalid arguments format. Expected: [project_directory] | topic: [topic name]' and exit.
+
 Extract:
 - `project_directory` — absolute path to the manual project
 - `topic` — the manual topic (e.g., "Prayer", "The Kingdom of God")
@@ -105,13 +107,10 @@ Write gleaned additions to `[project_directory]/ingested/dna-additions.md`:
 
 ## 5. Merge DNA Additions into Church Profile
 
-Read `~/Documents/Manuals/.church-profile/theological-dna.md`.
+Present the gleaned additions to the user: "I found [N] potential theological DNA additions from these source files. Would you like to merge them into your church profile now, or review them first in `ingested/dna-additions.md`?"
 
-For each item in `dna-additions.md`:
-- If the item is genuinely new (not already captured), add it to the appropriate section
-- If it clarifies or updates an existing entry, update it
-- Always append to the DNA Change Log table
+On approval: read `~/Documents/Manuals/.church-profile/theological-dna.md`, merge additively (adding new items, updating existing where clarified, appending to the DNA Change Log table), write the updated file.
 
-Write the updated `theological-dna.md`.
+On "review first": report the path to `dna-additions.md` and stop. The user can manually review and then say "merge the DNA additions" to trigger the merge.
 
-Report: "Stage 0 complete: [N] source files ingested. Topic content extracted to `ingested/topic-extract.md`. Church DNA updated with [N] new items."
+Report: "Stage 0 complete: [N] source files ingested. Topic content extracted to `ingested/topic-extract.md`. DNA additions pending user review at `ingested/dna-additions.md`." (Adjust final sentence if the user approved immediate merge: "Church DNA updated with [N] new items.")

@@ -14,7 +14,7 @@ When this skill activates:
 
 1. Check if `~/Documents/Manuals/.church-profile/theological-dna.md` exists
    - If **exists**: this is an UPDATE run — display current DNA summary and ask user for source directory
-   - If **not exists**: this is a FIRST BUILD — inform user and ask for source directory
+   - If **not exists**: this is a FIRST BUILD — inform user: 'No church DNA profile found. I'll create one now.'
 
 2. Ask the user: "Where is your source material? Provide a directory path containing sermon transcripts, notes, or teaching outlines (as .md, .txt, or .pdf files)."
 
@@ -25,10 +25,12 @@ When this skill activates:
 ### Step 1: Discover source files
 
 ```bash
-find [source_directory] -name "*.md" -o -name "*.txt" | head -50
+find [source_directory] \( -name "*.md" -o -name "*.txt" -o -name "*.pdf" \) | head -50
 ```
 
 List discovered files. Report how many were found.
+
+Note: PDF files will be listed but Claude Code cannot read binary PDF files directly. If PDF files are found, inform the user and suggest converting them to .md or .txt first.
 
 ### Step 2: Read each source file
 

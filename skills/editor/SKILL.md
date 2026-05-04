@@ -40,7 +40,7 @@ Compare against theological-dna.md:
 
 ### Check 3: Scripture accuracy
 
-- Are scriptures quoted accurately? (Verify reference format — do not fabricate verses)
+- Are scriptures quoted accurately? Verify that each reference uses a plausible book name, chapter, and verse format (e.g., John 3:16, not John 3:100). You cannot look up verse text directly — flag any reference you are uncertain about in the edit report rather than silently passing it.
 - Are scriptures from the church's preferred translation (from voice profile)?
 - Are scripture anchors from theological-dna.md used where relevant?
 
