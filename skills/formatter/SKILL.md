@@ -13,6 +13,8 @@ Stage 4 of the pipeline. Converts all `edited/s*-final.md` files into a clean `.
 
 Arguments format: `[project_directory] [--workbook]`
 
+Split `$ARGUMENTS` on whitespace. The first token is `project_directory`. If a second token `--workbook` is present, set `workbook_mode = true`, otherwise `workbook_mode = false`. If no arguments are provided, report: 'No project directory provided. Usage: [project_directory] [--workbook]' and exit.
+
 Extract:
 - `project_directory` — absolute path
 - `workbook_mode` — true if `--workbook` is present
@@ -58,6 +60,8 @@ If workbook mode is active, also run:
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/format-manual.js" "[project_directory]" --workbook
 ```
+
+The script outputs `[Manual Title].docx` where the title comes from the `**Title:**` field in `manual-dna.md`. Capture the script's stdout to confirm the actual output paths before verifying in Section 4.
 
 ## 4. Verify Output
 

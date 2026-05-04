@@ -9,7 +9,7 @@ allowed-tools: Read, Write, Bash, Grep, Glob
 
 Stage 1 of the pipeline. Generates a themed section structure for the manual topic. Called by the orchestrator with the project directory path as `$ARGUMENTS`.
 
-**Mode detection:** If `$ARGUMENTS` contains `--populate-dna`, skip directly to Section 5. Do not execute Sections 1-4.
+**Mode detection:** If `$ARGUMENTS` contains `--populate-dna`, skip directly to Section 5. Do not execute Sections 1-4. In this mode, `$ARGUMENTS` has the form `[project_directory] --populate-dna` — extract the project directory from the first token before the space.
 
 ## 1. Read Context Documents
 

@@ -33,7 +33,7 @@ When the orchestrator activates, determine the user's intent:
 ### Check for existing projects
 
 ```bash
-ls ~/Documents/Manuals/ 2>/dev/null | grep -v "^\.church-profile$"
+ls -1 ~/Documents/Manuals/ 2>/dev/null | grep -v "^\.church-profile$"
 ```
 
 If the user mentions a specific manual name, look for a matching directory. If multiple projects exist, list them and ask which to work on. If no projects exist or the user wants a new manual, proceed to project creation.
@@ -107,7 +107,7 @@ Scan the project directory to determine the current pipeline state. Work backwar
 8. None of above                    → NOT STARTED (proceed to Stage 1)
 ```
 
-**Section count:** Read `outline.md` and count `## Section` headings for the expected section count.
+**Section count:** Read `outline.md` and count all level-2 headings (`## `) that are section or conclusion entries. The outline uses `## Section N:` for main sections and `## Conclusion:` for the final entry — count both. Exclude the document title heading `# Manual Outline`.
 
 **Partial completion:** If section files exist but count < expected, the stage is PARTIALLY COMPLETE. Identify which sections are missing and resume only those.
 
@@ -169,7 +169,7 @@ Does this structure look right? I can adjust specific sections, reorder, add mor
 
 **On approval:**
 1. Add `<!-- APPROVED -->` to the top of `outline.md`
-2. Re-invoke outliner with `--populate-dna` argument to update manual-dna.md section structure
+2. Re-invoke outliner with arguments: `[project_directory] --populate-dna` to update manual-dna.md section structure
 3. Proceed to Stage 2
 
 **On rejection with feedback:**
