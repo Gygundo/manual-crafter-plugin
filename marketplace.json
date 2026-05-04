@@ -1,0 +1,9 @@
+{
+  "displayName": "Manual Crafter",
+  "tagline": "Topical theological training manuals from sermons or scratch",
+  "category": "writing",
+  "tags": ["theology", "church", "training", "manual", "equipping"],
+  "publisher": "gygundo",
+  "requiredTools": ["node"],
+  "installInstructions": "Run: npm install -g docx (if not already installed from book-crafter)"
+}

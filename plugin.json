@@ -1,0 +1,13 @@
+{
+  "name": "manual-crafter",
+  "version": "1.0.0",
+  "description": "Builds topical theological training manuals from sermon transcripts or from scratch. Maintains a persistent church theological DNA profile across all manuals.",
+  "author": {
+    "name": "David",
+    "email": "david@encounterchurch.co.za"
+  },
+  "homepage": "https://github.com/gygundo/manual-crafter-plugin",
+  "repository": "https://github.com/gygundo/manual-crafter-plugin",
+  "license": "MIT",
+  "keywords": ["manual", "theology", "training", "church", "equipping", "docx", "teaching"]
+}
