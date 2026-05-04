@@ -14,7 +14,7 @@ Stage 4: Format     — Clean .docx output (+ optional workbook variant)
 
 **Runs when:** Source material (sermon transcripts, notes) is present in `sources/`
 **Skipped when:** No source material — Claude writes from scratch using church DNA
-**Output:** `ingested/topic-extract.md`, `ingested/dna-additions.md`, updates to `~/.church-profile/theological-dna.md`
+**Output:** `ingested/topic-extract.md`, `ingested/dna-additions.md`, updates to `~/Documents/Manuals/.church-profile/theological-dna.md`
 
 Ingester reads all files in `sources/`, extracts:
 1. Teaching content relevant to the manual topic → `ingested/topic-extract.md`

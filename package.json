@@ -1,8 +1,7 @@
 {
   "name": "manual-crafter-plugin",
   "version": "1.0.0",
-  "description": "> **Requires:** Claude Code + Node ≥18. Check with `node -v`.",
-  "main": "index.js",
+  "description": "Builds theological training manuals from sermon transcripts",
   "directories": {
     "test": "tests"
   },

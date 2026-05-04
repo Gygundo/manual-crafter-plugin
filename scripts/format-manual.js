@@ -85,7 +85,13 @@ function parseSection(rawContent, workbook = false) {
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 400, after: 200 },
       }));
-    } else if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**')) {
+    } else if (line.startsWith('### ')) {
+      elements.push(new Paragraph({
+        text: line.replace(/^### /, ''),
+        heading: HeadingLevel.HEADING_3,
+        spacing: { before: 240, after: 160 },
+      }));
+    } else if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**') && !line.endsWith('**')) {
       // Italic scripture line
       const text = line.replace(/^\*|\*$/g, '');
       elements.push(new Paragraph({

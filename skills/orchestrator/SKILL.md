@@ -107,7 +107,7 @@ Scan the project directory to determine the current pipeline state. Work backwar
 8. None of above                    → NOT STARTED (proceed to Stage 1)
 ```
 
-**Section count:** Read `outline.md` and count all level-2 headings (`## `) that are section or conclusion entries. The outline uses `## Section N:` for main sections and `## Conclusion:` for the final entry — count both. Exclude the document title heading `# Manual Outline`.
+**Section count:** Read `outline.md` and count `## Section N:` headings only (lines matching `## Section `). Do NOT count `## Conclusion:` — the conclusion is treated as a regular section by the writer (section N+1) if it exists, but the `**Sections:**` metadata field in outline.md gives the authoritative count of numbered sections.
 
 **Partial completion:** If section files exist but count < expected, the stage is PARTIALLY COMPLETE. Identify which sections are missing and resume only those.
 
