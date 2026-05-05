@@ -68,7 +68,18 @@ Closing statement (1-2 sentences tying this section back to the manual's core th
 - Prefer scripture anchors from `theological-dna.md` where relevant
 - Do NOT use fill-in-the-blank blanks in this stage — the formatter handles that
 
-### Length target: 400-600 words (excluding scripture block and reflection questions)
+### Conclusion sections
+
+If the section title begins with `Conclusion:` or is identified as the conclusion:
+
+- Do NOT introduce new doctrine — only close the loop on what was taught in the manual
+- Open with a single-sentence declaration that names the central truth of the entire manual
+- Briefly recap what the reader now knows without re-teaching it (2-3 sentences maximum)
+- Name what is now available to the reader because of what was established
+- Close with a direct call to action: "Come back", "Walk in it", "Guard it", "Go deeper" — specific and pastoral
+- Length target for conclusions: **350-480 words** (shorter than regular sections — conclusions should land fast)
+
+### Length target: 400-600 words (excluding scripture block and reflection questions); 350-480 words for conclusion sections
 
 ## 4. Write Section File
 

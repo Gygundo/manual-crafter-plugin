@@ -107,9 +107,11 @@ Scan the project directory to determine the current pipeline state. Work backwar
 8. None of above                    → NOT STARTED (proceed to Stage 1)
 ```
 
-**Section count:** Read `outline.md` and count `## Section N:` headings only (lines matching `## Section `). Do NOT count `## Conclusion:` — the conclusion is treated as a regular section by the writer (section N+1) if it exists, but the `**Sections:**` metadata field in outline.md gives the authoritative count of numbered sections.
+**Section count:** Read `outline.md`. Count `## Section N:` headings (lines matching `## Section `). Also check if a `## Conclusion:` line exists — if it does, add 1 to the expected count. The total expected section files = numbered sections + (1 if conclusion present).
 
-**Partial completion:** If section files exist but count < expected, the stage is PARTIALLY COMPLETE. Identify which sections are missing and resume only those.
+**Conclusion detection:** Scan `outline.md` for a line beginning with `## Conclusion:`. If found, extract the title after the colon (e.g., `## Conclusion: Back Into the Light` → title is `Back Into the Light`). If no title is present after the colon, use `Conclusion` as the title.
+
+**Partial completion:** If section files exist but count < expected total (including conclusion), the stage is PARTIALLY COMPLETE. Identify which sections are missing and resume only those.
 
 ## 5. Status Dashboard
 
@@ -181,14 +183,30 @@ Does this structure look right? I can adjust specific sections, reorder, add mor
 
 Read the approved outline. Get section count and titles.
 
-For each section in order:
+**Step 1 — Write numbered sections:**
+
+For each `## Section N: [Title]` in order:
 
 1. Check if `sections/s[NN]-*-draft.md` already exists (resume logic)
 2. If not: invoke `manual-crafter:writer` with arguments: `[project_directory] | section: [N] | title: [title]`
 3. Verify `sections/s[NN]-*-draft.md` exists with `<!-- SECTION COMPLETE -->` marker
 4. Report progress: "Section [N]/[total] written: [title]"
 
-After all sections: "Stage 2 complete: [N] sections written. Proceeding to edit."
+**Step 2 — Write conclusion (always required):**
+
+After all numbered sections, check for `## Conclusion:` in `outline.md`.
+
+If a conclusion line exists:
+1. Extract the conclusion title (text after `## Conclusion:`)
+2. Determine the conclusion section number: N+1 (where N = number of numbered sections)
+3. Check if `sections/s[NN]-conclusion-*-draft.md` already exists (resume logic)
+4. If not: invoke `manual-crafter:writer` with arguments: `[project_directory] | section: [N+1] | title: Conclusion: [conclusion title]`
+5. Verify the conclusion draft file was written
+6. Report: "Conclusion written: [title]"
+
+If no conclusion line exists in `outline.md`: flag a warning — "Warning: outline.md has no conclusion section. Every manual should end with a conclusion. Consider revising the outline."
+
+After all sections including conclusion: "Stage 2 complete: [N] sections + conclusion written. Proceeding to edit."
 
 ### Stage 3: Edit
 

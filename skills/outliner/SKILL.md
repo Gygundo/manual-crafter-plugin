@@ -35,6 +35,12 @@ Based on the topic and context, generate 4-8 themed sections that cover the topi
 - End with application or implications for the believer's life
 - Each section title should be a clear, readable phrase (not academic)
 
+**The conclusion is NOT optional.** Every manual must end with a conclusion section. The conclusion must:
+- Not introduce new doctrine — only close the loop on what was taught
+- Land as a declaration: this is who you are, this is what is true, this is your inheritance
+- End with a clear call to action or a challenge to walk in what was established
+- Be titled `## Conclusion: [Memorable short phrase]` (e.g., "Back Into the Light", "Walk in What You Have", "This Is Your Inheritance")
+
 ## 3. Write outline.md
 
 Write `[project_directory]/outline.md`:

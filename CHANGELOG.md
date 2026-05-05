@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2 — 2026-05-05
+
+Pipeline fix — conclusion section now always written:
+
+- **Orchestrator**: Stage 2 now has a dedicated conclusion step that runs after all numbered sections. Reads `## Conclusion:` from outline.md, extracts the title, and calls the writer for it as section N+1. Warns if outline has no conclusion. State detection updated to include the conclusion in expected section count.
+- **Outliner**: Conclusion is now explicitly required. Added guidance: every outline must end with a `## Conclusion: [Title]` section; defined what the conclusion must do (declaration + call to action, no new doctrine).
+- **Writer**: Added conclusion-specific writing guidance — shorter target (350-480 words), no new doctrine, opens with a declaration, closes with a direct call to action.
+
 ## 1.0.1 — 2026-05-04
 
 Formatter improvements:
