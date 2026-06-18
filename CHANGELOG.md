@@ -1,5 +1,33 @@
 # Changelog
 
+## 1.1.0 — 2026-06-18
+
+Manuals are now true training material in the Maldonado lesson structure, and the plugin mirrors
+book-crafter's quality architecture (rubric + editor-enforced craft rules). **Breaking:** the
+fill-in-the-blank workbook variant is removed; terminology moves from "sections" to "lessons".
+
+- **New reference — `lesson-template.md`**: the foundational pedagogical DNA. Every lesson follows
+  Bible Text → Objectives → Introduction → question-driven Teaching Body → Final Questions →
+  Application/Activation → (optional) Tithes & Offerings → (optional) Prayer. Defines the markdown
+  contract the writer emits and the formatter renders. Read by every stage so the training character
+  carries through.
+- **New reference — `manual-craft-rules.md`**: 14 voice-agnostic procedural rules (MANUAL-01..14),
+  each auto-revise or flag, enforced by the editor (no deterministic script — the editor is the
+  enforcement surface).
+- **New reference — `lesson-rubric.md`**: 7-component pedagogy rubric (0–14). Editor scores every
+  lesson; ship gate = total ≥ 10 AND hard rules (MANUAL-01/-02/-11) pass.
+- **Product models**: orchestrator asks at creation — `standalone-lessons` (collection, no
+  conclusion) or `progressive` (single topic, conclusion required). Outliner branches accordingly.
+- **Lesson configuration** in manual-dna.md: Application vs Activation heading, Tithes & Offerings
+  on/off, Prayer on/off, per-lesson length target.
+- **Theological DNA** gains **Stewardship & Giving Exhortation** (feeds the Tithes & Offerings block
+  in the church's voice, never foreign boilerplate) and **Teaching & Pedagogical DNA**. Ingester and
+  dna-builder now glean both.
+- **Writer/Outliner/Editor/Formatter/Orchestrator** rewritten around the lesson template and rubric.
+- **Formatter (`format-manual.js` v3)**: parses the lesson contract (labelled sections, sub-questions,
+  numbered points, scripture blockquotes); workbook/blank code removed.
+- **Removed**: fill-in-the-blank workbook variant (`--workbook`, answer keys, blanks) — permanently.
+
 ## 1.0.2 — 2026-05-05
 
 Pipeline fix — conclusion section now always written:

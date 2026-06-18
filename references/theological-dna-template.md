@@ -64,6 +64,32 @@ Core scriptures that repeatedly ground this church's teaching. These should appe
 
 ---
 
+## Teaching & Pedagogical DNA
+
+How this church teaches and disciples — the equipping posture that every training manual should carry.
+
+- **Teaching voice:** [How truth is delivered — e.g. declarative, scripture-first, accessible to lay leaders]
+- **How a point is established:** [e.g. felt-need question → scripture → explanation → application]
+- **Discipleship posture:** [e.g. every member is an equipper; the manual disciples the reader to re-teach]
+- **What the church wants every learner to walk away able to DO:** [the action bias of the teaching]
+
+<!-- This section keeps the *training character* consistent across manuals. The lesson template
+(references/lesson-template.md) encodes the structure; this captures the church-specific teaching posture. -->
+
+---
+
+## Stewardship & Giving Exhortation
+
+Used by the lesson template's **Tithes & Offerings** block. The block draws its scripture and
+exhortation from here so giving is taught in THIS church's voice — never another ministry's boilerplate.
+Leave blank if the church does not want a giving block (then set Tithes & Offerings `off` per manual).
+
+- **Theology of giving:** [The church's stance — e.g. giving as worship and honour, not obligation or transaction]
+- **Preferred giving scriptures:** [2–4 references the church uses, e.g. Malachi 3:10; 2 Corinthians 9:7]
+- **Standard exhortation tone:** [2–4 sentences the giving block should echo, in the church's words]
+
+---
+
 ## DNA Change Log
 
 Track what was added/updated and when, so future builders know the history.

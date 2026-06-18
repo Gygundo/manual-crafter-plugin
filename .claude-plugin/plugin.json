@@ -1,7 +1,7 @@
 {
   "name": "manual-crafter",
-  "version": "1.0.2",
-  "description": "Builds topical theological training manuals from sermon transcripts or from scratch. Maintains a persistent church theological DNA profile across all manuals.",
+  "version": "1.1.0",
+  "description": "Builds theological training manuals as lessons in the Maldonado teaching structure (Bible Text, Objectives, question-driven teaching, Final Questions, Application). Supports standalone-lesson collections and progressive single-topic manuals. Maintains a persistent church theological DNA profile and enforces a lesson craft rubric. No fill-in-the-blanks.",
   "author": {
     "name": "David",
     "email": "david@encounterchurch.co.za"

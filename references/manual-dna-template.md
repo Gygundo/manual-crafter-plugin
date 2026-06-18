@@ -7,12 +7,36 @@
 
 **Title:** [Manual title]
 **Subtitle:** [Optional subtitle]
-**Topic:** [The theological topic this manual addresses]
+**Topic:** [The theological topic, or the equipping theme, this manual addresses]
 **Target Audience:** [Who will read this — e.g. new believers, cell group leaders, general congregation]
 **Manual Type:** [e.g. equipping, discipleship, topical study, retreat resource]
 **Created:** [YYYY-MM-DD]
 **Source Material:** [List of source sermon/transcript files used, or "from scratch"]
-**Fill-in-the-Blank Variant:** [Yes / No]
+
+---
+
+## Product Model
+
+**Model:** [`standalone-lessons` | `progressive`]
+
+- **`standalone-lessons`** — the manual is a collection of self-contained lessons, each on its own
+  topic, teachable in any order (the classic *52 Life Lessons* format). No conclusion lesson.
+- **`progressive`** — the manual develops ONE topic across lessons that build on each other, ending
+  with a Conclusion lesson.
+
+---
+
+## Lesson Configuration
+
+Controls which configurable elements of the lesson template appear in this manual. See
+`lesson-template.md` for the full element spec.
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Application label | [`Application` \| `Activation`] | Heading used for the leader-action block |
+| Tithes & Offerings block | [`on` \| `off`] | Default `on`; requires church Stewardship DNA |
+| Prayer block | [`on` \| `off`] | Default `on` (skipped per-lesson where redundant) |
+| Per-lesson length target | [e.g. 450–800 words teaching] | Excludes scripture/objectives/questions |
 
 ---
 
@@ -21,17 +45,18 @@
 Which aspects of the church's theological DNA are most relevant to this topic?
 What specific doctrinal lens should this manual apply?
 
-[2-4 sentences describing the theological angle for this specific manual — drawn from theological-dna.md but focused on the topic]
+[2–4 sentences describing the theological angle for this specific manual — drawn from
+theological-dna.md but focused on the topic.]
 
 ---
 
-## Section Structure
+## Lesson Structure
 
-Populated after outline approval. One row per section.
+Populated after outline approval. One row per lesson.
 
-| # | Section Title | Core Theme | Key Scripture |
-|---|--------------|-----------|---------------|
-| 1 | [Title] | [What this section covers] | [Primary scripture] |
+| # | Lesson Title | Core Theme | Bible Text (anchor) |
+|---|--------------|-----------|---------------------|
+| 1 | [Title] | [What this lesson teaches] | [Anchor verse + reference] |
 
 ---
 
@@ -48,4 +73,4 @@ Leave blank if no additional guidance needed.
 
 - Scripture translation: [e.g. NKJV unless otherwise noted]
 - Spelling convention: [e.g. South African English]
-- Section length target: [e.g. 400-600 words per section]
+- Per-lesson length target: [e.g. 450–800 words of teaching per lesson]

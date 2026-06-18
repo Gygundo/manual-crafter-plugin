@@ -2,9 +2,19 @@
 
 > **Requires:** Claude Code + Node ≥18. Check with `node -v`.
 
-Builds topical theological training manuals from sermon transcripts or from scratch.
-Maintains a persistent church theological DNA profile so every manual carries
-the same doctrinal identity and voice.
+Builds theological **training manuals** from sermon transcripts or from scratch — every lesson
+follows the Maldonado teaching structure (Bible Text → Objectives → Introduction → question-driven
+teaching → Final Questions → Application, plus optional Tithes & Offerings and Prayer blocks).
+Maintains a persistent church theological DNA profile so every manual carries the same doctrinal
+identity, teaching voice, and stewardship posture.
+
+Two product models:
+- **Standalone lessons** — a collection of self-contained lessons, each its own topic, teachable in
+  any order (the *52 Life Lessons* format).
+- **Progressive** — one topic developed across building lessons, ending in a conclusion.
+
+The lesson structure lives in `references/lesson-template.md`; quality is enforced by
+`references/manual-craft-rules.md` and scored against `references/lesson-rubric.md` by the editor.
 
 ## Install
 
@@ -20,8 +30,9 @@ Or just ask: *"build a manual on prayer from these sermon transcripts"*
 
 ## What this makes
 
-A clean `.docx` file ready for your design team to brand and print. Optionally
-also produces a workbook variant with fill-in-the-blank blanks.
+A clean `.docx` file ready for your design team to brand and print — cover, contents, then each
+lesson laid out in the training-manual format. The teaching is delivered in full; there is **no
+fill-in-the-blank workbook variant**.
 
 Output lands in `~/Documents/Manuals/<manual title>/output/`.
 

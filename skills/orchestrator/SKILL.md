@@ -6,25 +6,30 @@ allowed-tools: Read, Write, Bash, Grep, Glob, Agent
 
 # Manual Crafter Orchestrator
 
-Master pipeline controller for the manual-crafter plugin. Manages the full lifecycle: creating projects, detecting pipeline state, chaining stages, and displaying progress.
+Master pipeline controller for the manual-crafter plugin. Manages the full lifecycle: creating
+projects, detecting pipeline state, chaining stages, and displaying progress. Every manual is built
+as a set of **lessons** following the Maldonado training-manual structure
+(`${CLAUDE_PLUGIN_ROOT}/references/lesson-template.md`).
 
 ## 1. Pipeline Overview
 
 ```
 Stage 0: Ingest    (conditional — skipped if no source material)
 Stage 1: Outline   (USER APPROVAL GATE — never skipped)
-Stage 2: Write     (sequential section writing)
-Stage 3: Edit      (voice + theological coherence)
-Stage 4: Format    (.docx output)
+Stage 2: Write     (sequential lesson writing, full lesson template)
+Stage 3: Edit      (enforce manual-craft-rules + score every lesson against lesson-rubric)
+Stage 4: Format    (.docx output — no workbook variant)
 ```
+
+Foundational references the stages read: `references/lesson-template.md` (structure),
+`references/manual-craft-rules.md` (procedural musts), `references/lesson-rubric.md` (quality scoring).
 
 ## 2. On Trigger — Detect Mode
 
-When the orchestrator activates, determine the user's intent:
+**DNA Only mode:** "update my DNA", "ingest sermons", "build my DNA profile", "update church DNA" →
+DNA Only mode (Section 7, Mode 4).
 
-**DNA Only mode:** User says "update my DNA", "ingest sermons", "build my DNA profile", "update church DNA" — route to DNA Only mode (Section 7, Mode 4) immediately.
-
-**Status mode:** User says "manual status", "where am I", "show progress" — route to Status mode (Section 7, Mode 5) immediately.
+**Status mode:** "manual status", "where am I", "show progress" → Status mode (Section 7, Mode 5).
 
 **Otherwise:** Detect or create a project (Section 3).
 
@@ -36,16 +41,29 @@ When the orchestrator activates, determine the user's intent:
 ls -1 ~/Documents/Manuals/ 2>/dev/null | grep -v "^\.church-profile$"
 ```
 
-If the user mentions a specific manual name, look for a matching directory. If multiple projects exist, list them and ask which to work on. If no projects exist or the user wants a new manual, proceed to project creation.
+If the user names a manual, look for a matching directory. If multiple exist, list and ask. If none
+or the user wants a new manual, proceed to creation.
 
 ### Creating a New Project
 
 Gather from the user:
 1. **Manual title** (required)
-2. **Topic** (required) — e.g., "Prayer", "The Kingdom of God", "Spiritual Authority"
-3. **Target audience** (required) — e.g., new believers, cell group leaders, general congregation
-4. **Source material** (optional) — directory path or file paths containing sermon transcripts/notes
-5. **Fill-in-the-blank variant** (optional, default No) — "Would you like a workbook variant with fill-in-the-blank blanks?"
+2. **Topic or theme** (required) — e.g. "Prayer", "Foundations for New Believers"
+3. **Target audience** (required) — e.g. new believers, cell group leaders, general congregation
+4. **Product model** (required) — ask:
+   > "Is this manual **(a) a collection of standalone lessons**, each on its own topic and teachable
+   > in any order (the 52-Lessons format), or **(b) one topic developed across progressive lessons**
+   > that build to a conclusion?"
+   Map (a) → `standalone-lessons`, (b) → `progressive`.
+   - If `standalone-lessons`: also ask how many lessons (typical sets: 8, 12, 26, 52).
+5. **Lesson configuration** (offer sensible defaults, let the user override):
+   - Leader-action heading: **Application** (default) or **Activation**
+   - Tithes & Offerings block: **on** (default) or off — note it requires church Stewardship DNA
+   - Prayer block: **on** (default) or off
+6. **Source material** (optional) — directory or file paths with sermon transcripts/notes
+
+> Note: this plugin no longer offers a fill-in-the-blank workbook variant. The teaching is always
+> delivered in full.
 
 ### Check for church profile
 
@@ -53,29 +71,31 @@ Gather from the user:
 ls ~/Documents/Manuals/.church-profile/theological-dna.md 2>/dev/null
 ```
 
-If **not found**: warn the user — "I don't see a church theological DNA profile yet. This profile ensures every manual carries your church's theological identity. Would you like to build it now before creating this manual? (Recommended — run `/manual-crafter:dna-builder`) Or proceed and build it later?"
+If **not found**: "I don't see a church theological DNA profile yet. This profile ensures every manual
+carries your church's theological identity and teaching voice. Build it now? (Recommended — run
+`/manual-crafter:dna-builder`.) Or proceed and build it later?"
 
-If user wants to build DNA first: invoke `manual-crafter:dna-builder`, then return here.
-If user wants to proceed: note that theological-dna.md is absent and the writer will use voice profile only.
+If building first: invoke `manual-crafter:dna-builder`, then return here. If proceeding: note that
+theological-dna.md is absent and the writer will use the voice profile only.
+
+If the **Tithes & Offerings** block is ON but the theological DNA has no Stewardship & Giving section,
+warn: "The Tithes & Offerings block is on, but your church profile has no stewardship DNA recorded.
+I can turn the block off, or you can add stewardship DNA via the dna-builder. Otherwise the editor
+will flag those blocks for you to fill."
 
 ### Create project directory structure
 
 ```bash
 MANUAL_DIR="$HOME/Documents/Manuals/[Manual Title]"
-mkdir -p "$MANUAL_DIR/sources"
-mkdir -p "$MANUAL_DIR/ingested"
-mkdir -p "$MANUAL_DIR/sections"
-mkdir -p "$MANUAL_DIR/edited"
-mkdir -p "$MANUAL_DIR/reports"
-mkdir -p "$MANUAL_DIR/output"
+mkdir -p "$MANUAL_DIR"/{sources,ingested,sections,edited,reports,output}
 ```
 
 ### Populate manual-dna.md
 
-Read `${CLAUDE_PLUGIN_ROOT}/references/manual-dna-template.md`. Write `[MANUAL_DIR]/manual-dna.md` with:
-- Title, subtitle (if given), topic, target audience, created date
-- Source material list (file paths if provided, or "from scratch")
-- Fill-in-the-blank: Yes/No
+Read `${CLAUDE_PLUGIN_ROOT}/references/manual-dna-template.md`. Write `[MANUAL_DIR]/manual-dna.md`
+with: title, subtitle (if given), topic, target audience, created date, source material list,
+**Product Model**, and the **Lesson Configuration** table (Application label, Tithes & Offerings
+on/off, Prayer on/off, per-lesson length target — default 450–800 words teaching).
 
 ### Copy voice profile
 
@@ -86,61 +106,59 @@ cp "${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/encounter-default.md" [MANUA
 
 ### Handle source material
 
-If the user provided source files or a directory, copy them to `[MANUAL_DIR]/sources/`.
+If the user provided source files/directory, copy them to `[MANUAL_DIR]/sources/`.
 
 ### Confirm creation
 
-Show the user the created directory and manual-dna.md metadata. Proceed to the status dashboard.
+Show the created directory, the product model, and the lesson configuration. Proceed to the dashboard.
 
 ## 4. Pipeline State Detection
 
-Scan the project directory to determine the current pipeline state. Work backwards from the most advanced stage:
+Scan the project directory, working backwards from the most advanced stage:
 
 ```
-1. Check for output/*.docx          → If exists: COMPLETE
-2. Check for edited/s*-final.md     → Count matches section count in outline.md? Stage 3 COMPLETE
-3. Check for sections/s*-draft.md   → Count matches section count? Stage 2 COMPLETE
-4. Check for outline.md with <!-- APPROVED -->  → Stage 1 COMPLETE
-5. Check for outline.md without <!-- APPROVED --> → Stage 1 IN PROGRESS
-6. Check for ingested/topic-extract.md → Stage 0 COMPLETE
-7. Check for sources/ with files    → Stage 0 NEEDED
-8. None of above                    → NOT STARTED (proceed to Stage 1)
+1. output/*.docx                         → COMPLETE
+2. edited/s*-final.md (count = expected)  → Stage 3 COMPLETE
+3. sections/s*-draft.md (count = expected)→ Stage 2 COMPLETE
+4. outline.md with <!-- APPROVED -->      → Stage 1 COMPLETE
+5. outline.md without <!-- APPROVED -->   → Stage 1 IN PROGRESS
+6. ingested/topic-extract.md             → Stage 0 COMPLETE
+7. sources/ with files                    → Stage 0 NEEDED
+8. none of the above                      → NOT STARTED (proceed to Stage 1)
 ```
 
-**Section count:** Read `outline.md`. Count `## Section N:` headings (lines matching `## Section `). Also check if a `## Conclusion:` line exists — if it does, add 1 to the expected count. The total expected section files = numbered sections + (1 if conclusion present).
+**Expected lesson count:** Read `outline.md`. Count `## Lesson N:` headings. If the Product Model is
+`progressive`, also check for a `## Conclusion:` line — if present, add 1 to the expected count. For
+`standalone-lessons` there is no conclusion.
 
-**Conclusion detection:** Scan `outline.md` for a line beginning with `## Conclusion:`. If found, extract the title after the colon (e.g., `## Conclusion: Back Into the Light` → title is `Back Into the Light`). If no title is present after the colon, use `Conclusion` as the title.
+**Conclusion detection (progressive only):** Scan for a line beginning `## Conclusion:`. Extract the
+title after the colon (default `Conclusion` if none).
 
-**Partial completion:** If section files exist but count < expected total (including conclusion), the stage is PARTIALLY COMPLETE. Identify which sections are missing and resume only those.
+**Partial completion:** If lesson files exist but count < expected, the stage is PARTIALLY COMPLETE.
+Identify which lessons are missing and resume only those.
 
 ## 5. Status Dashboard
-
-Display after project creation and on status mode:
 
 ```
 ## Manual Pipeline: [Manual Title]
 
-Topic: [topic]
-Audience: [audience]
+Topic: [topic]   Audience: [audience]   Model: [standalone-lessons | progressive]
 Directory: ~/Documents/Manuals/[Manual Title]/
 
 ### Church Profile
-[✓/✗] Theological DNA: [found at .church-profile/theological-dna.md / NOT FOUND]
+[✓/✗] Theological DNA: [found / NOT FOUND]
 [✓/✗] Voice Profile: [found / using encounter-default]
 
+### Lesson Configuration
+Leader-action heading: [Application | Activation]
+Tithes & Offerings: [on | off]   Prayer: [on | off]
+
 ### Pipeline Status
-
-[ ] Stage 0: Ingest (ingester)
-    [N source files in sources/ / No source material]
-
-[ ] Stage 1: Outline (outliner)
-    [Not started / Generated: [date] / Approved: Yes/No]
-
-[ ] Stage 2: Write (writer) — 0/[N] sections
-[ ] Stage 3: Edit (editor)
-[ ] Stage 4: Format (formatter)
-    [ ] Reading version
-    [ ] Workbook version [only if requested]
+[ ] Stage 0: Ingest    [N source files / No source material]
+[ ] Stage 1: Outline   [Not started / Generated: date / Approved: Yes/No]
+[ ] Stage 2: Write     — 0/[N] lessons
+[ ] Stage 3: Edit      [— N/N lessons shipping once run]
+[ ] Stage 4: Format
 
 ### Next: [Next action]
 ```
@@ -149,150 +167,101 @@ Directory: ~/Documents/Manuals/[Manual Title]/
 
 ### Stage 0: Ingest (Conditional)
 
-Only run if `sources/` directory contains files.
-
-Invoke `manual-crafter:ingester` with arguments: `[project_directory] | topic: [topic]`
-
-Verify output: `ingested/topic-extract.md` exists with `<!-- INGEST COMPLETE` marker.
-
-If no source files: display "No source material — proceeding to outline using church DNA only."
+Only if `sources/` contains files. Invoke `manual-crafter:ingester` with arguments:
+`[project_directory] | topic: [topic]`. Verify `ingested/topic-extract.md` exists with the
+`<!-- INGEST COMPLETE` marker. If no source files: "No source material — proceeding to outline using
+church DNA only."
 
 ### Stage 1: Outline (Approval Gate)
 
-Invoke `manual-crafter:outliner` with argument: `[project_directory]`
+Invoke `manual-crafter:outliner` with argument `[project_directory]`. The outliner branches on the
+Product Model and scaffolds each lesson (title, Bible Text anchor, Objectives, sub-questions).
 
-After outliner produces `outline.md`, present the full outline to the user:
+Present the full outline:
 
-"Here is the proposed structure for **[Manual Title]**:
+"Here is the proposed structure for **[Manual Title]** ([N] lessons, [product model]):
 
-[Display each section title and theme description from outline.md]
+[Display each lesson: title, theme, Bible Text anchor, objectives]
 
-Does this structure look right? I can adjust specific sections, reorder, add more sections, or regenerate. Once approved, I'll begin writing."
+Does this look right? I can adjust lessons, reorder, add/remove, change the Bible Text anchors, or
+regenerate. Once approved, I'll begin writing."
 
 **On approval:**
 1. Add `<!-- APPROVED -->` to the top of `outline.md`
-2. Re-invoke outliner with arguments: `[project_directory] --populate-dna` to update manual-dna.md section structure
+2. Re-invoke outliner with `[project_directory] --populate-dna` to fill the Lesson Structure table
 3. Proceed to Stage 2
 
-**On rejection with feedback:**
-1. Pass feedback to outliner (re-invoke with project directory + feedback)
-2. Present revised outline
-3. Repeat approval loop
+**On rejection with feedback:** pass feedback to the outliner, present the revised outline, repeat.
 
 ### Stage 2: Write (Sequential)
 
-Read the approved outline. Get section count and titles.
+Read the approved outline. Get lesson count and titles.
 
-**Step 1 — Write numbered sections:**
-
-For each `## Section N: [Title]` in order:
-
+**Numbered lessons:** for each `## Lesson N: [Title]` in order:
 1. Check if `sections/s[NN]-*-draft.md` already exists (resume logic)
-2. If not: invoke `manual-crafter:writer` with arguments: `[project_directory] | section: [N] | title: [title]`
-3. Verify `sections/s[NN]-*-draft.md` exists with `<!-- SECTION COMPLETE -->` marker
-4. Report progress: "Section [N]/[total] written: [title]"
+2. If not: invoke `manual-crafter:writer` with `[project_directory] | section: [N] | title: [title]`
+3. Verify the draft exists with the `<!-- LESSON COMPLETE -->` marker
+4. Report: "Lesson [N]/[total] written: [title]"
 
-**Step 2 — Write conclusion (always required):**
+**Conclusion (progressive manuals only):** after all numbered lessons, if `## Conclusion:` exists in
+outline.md, write it as lesson N+1 (title `Conclusion: [phrase]`) via the writer, with resume logic.
+For `standalone-lessons` manuals there is no conclusion step.
 
-After all numbered sections, check for `## Conclusion:` in `outline.md`.
-
-If a conclusion line exists:
-1. Extract the conclusion title (text after `## Conclusion:`)
-2. Determine the conclusion section number: N+1 (where N = number of numbered sections)
-3. Check if `sections/s[NN]-conclusion-*-draft.md` already exists (resume logic)
-4. If not: invoke `manual-crafter:writer` with arguments: `[project_directory] | section: [N+1] | title: Conclusion: [conclusion title]`
-5. Verify the conclusion draft file was written
-6. Report: "Conclusion written: [title]"
-
-If no conclusion line exists in `outline.md`: flag a warning — "Warning: outline.md has no conclusion section. Every manual should end with a conclusion. Consider revising the outline."
-
-After all sections including conclusion: "Stage 2 complete: [N] sections + conclusion written. Proceeding to edit."
+After all lessons: "Stage 2 complete: [N] lessons written. Proceeding to edit."
 
 ### Stage 3: Edit
 
-Invoke `manual-crafter:editor` with argument: `[project_directory]`
+Invoke `manual-crafter:editor` with argument `[project_directory]`. Verify all `edited/s*-final.md`
+exist and `reports/edit-report.md` exists.
 
-Verify: All `edited/s*-final.md` files exist. `reports/edit-report.md` exists.
+Present the edit summary using the report:
+"Stage 3 complete. [N] lessons edited, **[N of N] shipping** (rubric ≥ 10/14 + hard rules pass).
+[N] flags raised."
 
-Present edit summary:
-"Stage 3 complete. [N] sections edited.
-[N] theological flags corrected.
-[N] voice adjustments made.
+If any lesson is **below the ship gate**, list it with its score and weak components, and ask the user:
+"Lesson [X] scored [Y]/14 ([weak components]). I can revise it again, you can review the edit report,
+or we can proceed to formatting as-is. What would you like?"
 
-Would you like to review the edit report before formatting? (`reports/edit-report.md`)"
-
-Give user options: Review report / Proceed to formatting / Request a specific section revision.
+Otherwise give options: Review report / Proceed to formatting / Request a specific lesson revision.
 
 ### Stage 4: Format
 
-Invoke `manual-crafter:formatter` with argument: `[project_directory] [--workbook if requested]`
-
-Verify output exists and is non-empty.
-
-Display completion message (Section 7, Mode completion).
+Invoke `manual-crafter:formatter` with argument `[project_directory]`. Verify the .docx exists and is
+non-empty. Display the completion message (Section 8).
 
 ## 7. Execution Modes
 
-### Mode 1: Guided (Default)
-
-Stage by stage with explanations. Ask before proceeding to each stage. Report results after each stage.
-
-### Mode 2: Full Pipeline
-
-Triggered: "build the whole manual", "full pipeline", "run everything"
-
-Run all stages in sequence. Always pause at outline approval gate. Otherwise auto-advance.
-
-### Mode 3: Resume
-
-Triggered: "continue", "resume", "pick up"
-
-1. Detect pipeline state
-2. Show status dashboard
-3. Identify next incomplete stage
-4. Offer to continue: "You're at Stage [N] — [description]. Continue?"
-
-### Mode 4: DNA Only
-
-Triggered: "update my DNA", "ingest sermons without a manual", "build church profile"
-
-Invoke `manual-crafter:dna-builder`. Do not create a project directory.
-
-### Mode 5: Status
-
-Triggered: "manual status", "where am I", "show progress"
-
-Show dashboard only. No execution.
+**Mode 1: Guided (default)** — stage by stage with explanations; ask before each stage.
+**Mode 2: Full Pipeline** — "build the whole manual" — run all stages; always pause at the outline
+approval gate and at any below-gate lesson; otherwise auto-advance.
+**Mode 3: Resume** — "continue"/"resume" — detect state, show dashboard, continue the next incomplete stage.
+**Mode 4: DNA Only** — invoke `manual-crafter:dna-builder`; no project directory created.
+**Mode 5: Status** — show dashboard only, no execution.
 
 ## 8. Completion Message
-
-When Stage 4 is complete:
 
 ```
 ## Manual Complete: [Manual Title]
 
 Output: ~/Documents/Manuals/[Manual Title]/output/[Manual Title].docx
-[If workbook: Workbook: ~/Documents/Manuals/[Manual Title]/output/[Manual Title] — Workbook.docx]
 
-Sections: [N]
+Lessons: [N]   Model: [standalone-lessons | progressive]
 Topic: [topic]
 
 Your .docx is ready for your design team.
 
 What next?
 1. Open the .docx in Word or Google Docs
-2. Request a section revision
+2. Request a lesson revision
 3. Start a new manual
 ```
 
 ## 9. Error Handling
 
-**No church DNA profile:** Warn user and offer to run dna-builder first.
-
-**No source files when ingester invoked:** Skip Stage 0 gracefully, proceed to Stage 1 using church DNA only.
-
-**Outline not approved:** "The outline hasn't been approved yet. Please review and let me know if you'd like to approve it or request changes."
-
-**Partial stage:** "Stage [N] is partially complete: [x]/[n] sections done. Missing: [list]. Resuming missing sections."
-
-**No Documents/Manuals directory:** Create it automatically: `mkdir -p ~/Documents/Manuals`
+- **No church DNA profile:** warn and offer to run dna-builder first.
+- **No source files when ingester invoked:** skip Stage 0, proceed to outline using church DNA only.
+- **Tithes & Offerings on but no stewardship DNA:** warn at creation; editor flags affected lessons.
+- **Outline not approved:** "The outline hasn't been approved yet. Approve it or request changes."
+- **Lesson below ship gate:** surface the lesson, its score, and weak components; offer revise/review/proceed.
+- **Partial stage:** "Stage [N] is partially complete: [x]/[n] lessons done. Missing: [list]. Resuming."
+- **No Documents/Manuals directory:** create it: `mkdir -p ~/Documents/Manuals`

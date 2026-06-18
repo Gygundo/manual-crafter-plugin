@@ -1,76 +1,83 @@
 ---
 name: editor
-description: "Edit all written sections for voice consistency, theological coherence, scripture accuracy, and flow. Called by the orchestrator during Stage 3. Not user-invocable directly."
+description: "Edit all written lessons: enforce the manual craft rules and score each lesson against the lesson rubric. Called by the orchestrator during Stage 3. Not user-invocable directly."
 user-invocable: false
 allowed-tools: Read, Write, Bash, Grep, Glob
 ---
 
 # Manual Crafter — Editor
 
-Stage 3 of the pipeline. Performs a single editing pass across all written sections. Called by the orchestrator with the project directory path as `$ARGUMENTS`.
+Stage 3 of the pipeline. Performs a single editing pass across all written lessons: enforces the
+procedural rules in `manual-craft-rules.md`, then scores every lesson against `lesson-rubric.md`.
+Called by the orchestrator with the project directory path as `$ARGUMENTS`.
 
 ## 1. Read Context
 
 Read all of the following:
 
-1. `[project_directory]/manual-dna.md` — topic, audience, theological angle
-2. `~/Documents/Manuals/.church-profile/theological-dna.md` — church DNA (ground truth for theological accuracy)
-3. `~/Documents/Manuals/.church-profile/voice-profile.md` — voice profile (ground truth for voice)
-4. All `[project_directory]/sections/s*-draft.md` files — sections to edit (in order)
+1. `${CLAUDE_PLUGIN_ROOT}/references/lesson-template.md` — the structural contract (element order + markdown)
+2. `${CLAUDE_PLUGIN_ROOT}/references/manual-craft-rules.md` — the rules you enforce (MANUAL-01..14)
+3. `${CLAUDE_PLUGIN_ROOT}/references/lesson-rubric.md` — the rubric you score against (7 components, 0–14)
+4. `[project_directory]/manual-dna.md` — topic, audience, Product Model, Lesson Configuration
+5. `~/Documents/Manuals/.church-profile/theological-dna.md` — ground truth for theology, key terms, stewardship DNA
+6. `~/Documents/Manuals/.church-profile/voice-profile.md` — ground truth for voice + translation
+7. All `[project_directory]/sections/s*-draft.md` files — the lessons to edit, in order
 
-## 2. Editing Pass
+## 2. Editing Pass — Enforce the Craft Rules
 
-For each section in order:
+For each lesson in order, work through every rule in `manual-craft-rules.md`:
 
-### Check 1: Voice consistency
+**Auto-revise rules** (rewrite the lesson in place to satisfy the rule):
+- **MANUAL-01** — insert/reorder any missing or misplaced required element
+- **MANUAL-02** — fix the Bible Text to exactly one full verse + reference + translation
+- **MANUAL-03** — make Objectives 2–4 verb-led, measurable
+- **MANUAL-06** — impose sub-question / numbered structure on any undifferentiated teaching prose
+- **MANUAL-08** — turn vague or re-teaching Application into concrete leader action steps
+- **MANUAL-10** — remove hedging, academic register, and any Avoid-list vocabulary; restore church voice
+- **MANUAL-11** — restore any blanked/omitted text (no fill-in-the-blanks, ever)
+- **MANUAL-04** — auto-revise the Introduction if it clearly opens on a definition rather than the need
 
-Compare against voice-profile.md:
-- Does the tone match? (Too academic? Too casual? Too hedging?)
-- Are sentence patterns consistent with the voice profile?
-- Is vocabulary aligned? (Check for avoided terms from voice profile)
-- Are emphasis techniques applied correctly?
+**Flag rules** (record in the edit report; correct only if the fix is unambiguous, otherwise leave
+for the user because it is a doctrinal/authorial decision):
+- **MANUAL-05** — orphan teaching claims with no nearby scripture (give the claim + a suggested anchor)
+- **MANUAL-07** — an Objective with no matching Final Question, or a Final Question testing untaught material
+- **MANUAL-09** — a claim that depends on another lesson having been read
+- **MANUAL-12** — scripture references you are uncertain about (you cannot look up verse text — flag, don't guess)
+- **MANUAL-13** — foreign/generic giving boilerplate, or a giving block with no stewardship-DNA basis
+- **MANUAL-14** — lessons more than ~30% over or under the length target
 
-### Check 2: Theological coherence
+Also confirm theological coherence against theological-dna.md (key terms used the church's way;
+nothing contradicting doctrinal positions) and continuity/flow across the set.
 
-Compare against theological-dna.md:
-- Are doctrinal positions stated correctly and consistently with the church's DNA?
-- Are key terms used in the church's defined way (not generic usage)?
-- Are theological emphases present and correct?
-- Does anything contradict the church's doctrinal positions?
+## 3. Score Each Lesson Against the Rubric
 
-### Check 3: Scripture accuracy
+After revising a lesson, score it against the 7 components in `lesson-rubric.md` (each 0–2):
+structural_completeness, objective_clarity, scriptural_anchoring, pedagogical_scaffold, voice_fidelity,
+application_strength, self_containment. Sum to `lesson_total` (0–14).
 
-- Are scriptures quoted accurately? Verify that each reference uses a plausible book name, chapter, and verse format (e.g., John 3:16, not John 3:100). You cannot look up verse text directly — flag any reference you are uncertain about in the edit report rather than silently passing it.
-- Are scriptures from the church's preferred translation (from voice profile)?
-- Are scripture anchors from theological-dna.md used where relevant?
+Determine **ship**: `yes` when `lesson_total ≥ 10` AND the hard rules (MANUAL-01, -02, -11) pass;
+otherwise `no`. If a lesson does not ship after one revision pass, revise once more targeting the
+weakest components, then re-score. Revision cap: **2 passes per lesson** — if it still falls short,
+record it as `ship: no` with the reasons and let the orchestrator surface it to the user.
 
-### Check 4: Flow
+## 4. Write Edited Lessons
 
-After reviewing all sections:
-- Does each section build naturally on the one before it?
-- Are there abrupt transitions between sections?
-- Does the manual progress from foundation through depth to application?
-- Does the conclusion feel like a satisfying close?
-
-## 3. Write Edited Sections
-
-For each section, write an edited version to `[project_directory]/edited/s[NN]-[slug]-final.md`.
-
-Apply corrections from all four checks. If a section passes all checks with only minor polish needed, apply the polish. If a section has significant theological issues, correct them and note it in the edit report.
+For each lesson, write the edited version to `[project_directory]/edited/s[NN]-[slug]-final.md`,
+preserving the markdown contract from `lesson-template.md`.
 
 File format:
 
 ```markdown
-<!-- SECTION: [N] | [Title] | [word_count] words | edited -->
+<!-- LESSON: [N] | [Title] | [word_count] words | edited -->
 
-## [Section Title]
+# [Lesson Title]
 
-[Edited content]
+[Edited lesson content — full template]
 
-<!-- EDIT COMPLETE: voice [pass/flag], theology [pass/flag], scripture [pass/flag], flow [pass/flag] -->
+<!-- EDIT COMPLETE: lesson_total [0-14], ship [yes/no] -->
 ```
 
-## 4. Write Edit Report
+## 5. Write Edit Report
 
 Write `[project_directory]/reports/edit-report.md`:
 
@@ -79,23 +86,43 @@ Write `[project_directory]/reports/edit-report.md`:
 
 **Manual:** [Title]
 **Edited:** [YYYY-MM-DD]
-**Sections:** [N]
+**Lessons:** [N]
+**Lessons shipping:** [N of N]
 
-## Summary
+## Scorecards
 
-| Section | Voice | Theology | Scripture | Flow | Changes |
-|---------|-------|----------|-----------|------|---------|
-| [Title] | pass/flag | pass/flag | pass/flag | pass/flag | [brief description] |
+[For each lesson, the YAML scorecard block from lesson-rubric.md § Scorecard Emit Format:]
+
+```yaml
+lesson: 1
+title: [Lesson Title]
+lesson_total: 12
+structural_completeness: 2
+objective_clarity: 2
+scriptural_anchoring: 2
+pedagogical_scaffold: 2
+voice_fidelity: 1
+application_strength: 2
+self_containment: 1
+hard_rules: pass
+ship: yes
+```
 
 ## Flags
 
-[List any theological flags, voice deviations, or scripture issues that were corrected — with the original text and the correction]
+[Every flag raised, by lesson: rule ID, the offending text, and the suggestion/decision needed from the user.]
+
+## Lessons Below the Ship Gate
+
+[Any lesson with ship: no — its total, the weak components, and what it needs.]
 
 ## Flow Notes
 
-[Any notes on transitions adjusted between sections]
+[Any continuity adjustments across lessons.]
 
 <!-- EDIT REPORT COMPLETE -->
 ```
 
-Report: "Stage 3 complete. [N] sections edited. [N] flags corrected. Edit report at `reports/edit-report.md`."
+Report to the orchestrator: "Stage 3 complete. [N] lessons edited, [N of N] shipping.
+[N] flags raised. Lowest lesson score: [X]/14. Edit report at `reports/edit-report.md`."
+If any lesson is below the ship gate, name it/them explicitly so the orchestrator can pause for the user.

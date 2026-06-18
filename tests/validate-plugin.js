@@ -35,7 +35,7 @@ function readFile(rel) {
 }
 
 console.log('\n── Manifest ──');
-const manifest = readJson('plugin.json');
+const manifest = readJson('.claude-plugin/plugin.json');
 check('plugin.json exists', !!manifest);
 check('plugin.json has name', manifest?.name === 'manual-crafter');
 check('plugin.json has version', !!manifest?.version);
@@ -54,11 +54,20 @@ for (const skill of expectedSkills) {
 }
 
 console.log('\n── References ──');
+check('lesson-template.md exists', fileExists('references/lesson-template.md'));
+check('manual-craft-rules.md exists', fileExists('references/manual-craft-rules.md'));
+check('lesson-rubric.md exists', fileExists('references/lesson-rubric.md'));
 check('theological-dna-template.md exists', fileExists('references/theological-dna-template.md'));
 check('manual-dna-template.md exists', fileExists('references/manual-dna-template.md'));
 check('pipeline-stages.md exists', fileExists('references/pipeline-stages.md'));
 check('voice-profile-spec.md exists', fileExists('references/voice-profiles/voice-profile-spec.md'));
 check('encounter-default.md exists', fileExists('references/voice-profiles/encounter-default.md'));
+
+// lesson-rubric.md must carry the scoring schema; manual-craft-rules must define the hard rules
+const rubric = readFile('references/lesson-rubric.md');
+check('lesson-rubric.md has ship_floor', rubric?.includes('ship_floor'));
+const craftRules = readFile('references/manual-craft-rules.md');
+check('manual-craft-rules.md defines MANUAL-01', craftRules?.includes('MANUAL-01'));
 
 console.log('\n── Scripts ──');
 check('format-manual.js exists', fileExists('scripts/format-manual.js'));
@@ -69,6 +78,7 @@ check('format-manual.js has readManualDna function', script?.includes('function 
 check('format-manual.js has readSections function', script?.includes('function readSections'));
 check('format-manual.js has parseSection function', script?.includes('function parseSection'));
 check('format-manual.js has parseInline function', script?.includes('function parseInline'));
+check('format-manual.js has no workbook/blank code', !script?.includes('applyBlanks') && !script?.includes('--workbook'));
 
 console.log('\n── Fixtures ──');
 check('tiny-manual fixture exists', fileExists('fixtures/tiny-manual'));

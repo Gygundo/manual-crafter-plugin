@@ -80,6 +80,8 @@ While reading source files, also look for theological DNA signals not specifical
 - Recurring phrases that mark theological identity
 - Terms used in distinctive ways
 - Scripture anchors (frequently cited scriptures)
+- **Stewardship & giving signals** — how the pastor teaches tithing, offerings, generosity (theology, preferred scriptures, exhortation tone). Feeds the Stewardship & Giving Exhortation DNA used by the lesson template's Tithes & Offerings block.
+- **Teaching & pedagogical signals** — how truth is delivered (felt-need framing, scripture-first, calls to action). Feeds the Teaching & Pedagogical DNA.
 
 Write gleaned additions to `[project_directory]/ingested/dna-additions.md`:
 
@@ -101,6 +103,12 @@ Write gleaned additions to `[project_directory]/ingested/dna-additions.md`:
 
 ## New Scripture Anchors
 [New frequently-cited scriptures]
+
+## Stewardship & Giving Signals
+[How giving is taught: theology, preferred scriptures, exhortation tone — or "none found"]
+
+## Teaching & Pedagogical Signals
+[How truth is delivered and what learners are pushed to DO — or "none found"]
 
 <!-- DNA ADDITIONS COMPLETE -->
 ```

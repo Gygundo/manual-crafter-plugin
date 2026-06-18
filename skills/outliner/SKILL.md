@@ -1,76 +1,110 @@
 ---
 name: outliner
-description: "Generate a topic-driven section structure for a training manual. Called by the orchestrator during Stage 1. Reads manual DNA, theological DNA, and topic extract. Not user-invocable directly."
+description: "Generate a lesson structure for a training manual, scaffolded to the Maldonado lesson template. Called by the orchestrator during Stage 1. Reads manual DNA, theological DNA, lesson template, and topic extract. Not user-invocable directly."
 user-invocable: false
 allowed-tools: Read, Write, Bash, Grep, Glob
 ---
 
 # Manual Crafter — Outliner
 
-Stage 1 of the pipeline. Generates a themed section structure for the manual topic. Called by the orchestrator with the project directory path as `$ARGUMENTS`.
+Stage 1 of the pipeline. Generates the lesson structure for the manual and scaffolds each lesson to
+the Maldonado lesson template. Called by the orchestrator with the project directory path as `$ARGUMENTS`.
 
-**Mode detection:** If `$ARGUMENTS` contains `--populate-dna`, skip directly to Section 5. Do not execute Sections 1-4. In this mode, `$ARGUMENTS` has the form `[project_directory] --populate-dna` — extract the project directory from the first token before the space.
+**Mode detection:** If `$ARGUMENTS` contains `--populate-dna`, skip directly to Section 5. Do not
+execute Sections 1–4. In this mode, `$ARGUMENTS` has the form `[project_directory] --populate-dna` —
+extract the project directory from the first token before the space.
 
 ## 1. Read Context Documents
 
 Read all of the following:
 
-1. `[project_directory]/manual-dna.md` — topic, audience, angle, any existing section hints
-2. `~/Documents/Manuals/.church-profile/theological-dna.md` — church doctrinal positions, emphases, key terms
-3. `~/Documents/Manuals/.church-profile/voice-profile.md` — voice profile (for tonal guidance)
-4. `[project_directory]/ingested/topic-extract.md` — if exists (extracted teaching content from sources)
+1. `[project_directory]/manual-dna.md` — topic, audience, **Product Model**, Lesson Configuration, any section hints
+2. `${CLAUDE_PLUGIN_ROOT}/references/lesson-template.md` — the lesson scaffold you are designing toward
+3. `~/Documents/Manuals/.church-profile/theological-dna.md` — doctrinal positions, emphases, key terms, scripture anchors
+4. `~/Documents/Manuals/.church-profile/voice-profile.md` — voice profile (tonal guidance, default translation)
+5. `[project_directory]/ingested/topic-extract.md` — if it exists (extracted teaching content from sources)
 
-## 2. Generate Section Structure
+Read the **Product Model** from manual-dna.md. It is one of `standalone-lessons` or `progressive`.
+Everything in Section 2 branches on it.
 
-Based on the topic and context, generate 4-8 themed sections that cover the topic comprehensively. Sections should:
+## 2. Generate Lesson Structure
+
+### If Product Model is `standalone-lessons`
+
+The manual is a collection of self-contained lessons, each on its own topic (the classic *52 Life
+Lessons* format). Generate the requested number of lessons (ask the orchestrator/user if a count was
+not given — typical sets are 8, 12, 26, or 52). Each lesson:
+
+- Addresses ONE distinct life/discipleship topic, teachable in any order
+- Is fully self-contained — no lesson depends on another
+- Carries a clear, inviting title ("Repentance", "Authority Over the Enemy", "What Is the Tithe?")
+- **No conclusion lesson** — there is no overarching arc to close.
+
+Spread the lessons across the church's emphases (drawn from theological-dna.md) so the set as a whole
+disciples the reader broadly.
+
+### If Product Model is `progressive`
+
+The manual develops ONE topic across 4–8 lessons that build on each other. Lessons should:
 
 - Progress logically (foundation → depth → application)
-- Each address a distinct angle on the topic
-- Collectively give the reader a complete theological grounding in the topic
-- Align with the church's theological emphases from theological-dna.md
+- Each address a distinct angle on the single topic
+- Collectively give the reader a complete grounding in that topic
+- Align with the church's theological emphases
 
-**Good section structure principles:**
-- Start with "What is X?" or "The foundation of X" — establish before building
-- Move through theological depth in the middle sections
-- End with application or implications for the believer's life
-- Each section title should be a clear, readable phrase (not academic)
-
-**The conclusion is NOT optional.** Every manual must end with a conclusion section. The conclusion must:
-- Not introduce new doctrine — only close the loop on what was taught
+**A Conclusion lesson is required** for progressive manuals. It must:
+- Introduce no new doctrine — only close the loop on what was taught
 - Land as a declaration: this is who you are, this is what is true, this is your inheritance
-- End with a clear call to action or a challenge to walk in what was established
-- Be titled `## Conclusion: [Memorable short phrase]` (e.g., "Back Into the Light", "Walk in What You Have", "This Is Your Inheritance")
+- End with a clear call to action
+- Be titled `## Conclusion: [Memorable short phrase]` (e.g., "Walk in What You Have")
+
+### For every lesson (both models) — scaffold to the template
+
+For each lesson, propose:
+- **Title** — clear and inviting
+- **Theme** — one sentence: what this lesson teaches
+- **Bible Text (anchor)** — the single verse the lesson hangs off (the most direct carrier of the truth)
+- **Objectives** — 2–4 verb-led learner outcomes (Know / Recognise / Identify / Understand)
+- **Teaching sub-questions** — 3–6 questions the reader is already asking, that the body will answer
+- **Theological angle** — which church-DNA emphasis this lesson draws on
+
+This scaffold is the spine the writer fills. Drawing it now keeps every lesson on the template.
 
 ## 3. Write outline.md
 
 Write `[project_directory]/outline.md`:
 
 ```markdown
-# Manual Outline: [Topic]
+# Manual Outline: [Topic or Manual Theme]
 
 **Manual:** [Title from manual-dna.md]
-**Topic:** [Topic]
+**Product Model:** [standalone-lessons | progressive]
 **Target Audience:** [Audience from manual-dna.md]
-**Sections:** [N]
+**Lessons:** [N]
 
 ---
 
-## Section 1: [Title]
+## Lesson 1: [Title]
 
-**Theme:** [One sentence describing what this section covers]
-**Theological angle:** [Which aspect of the church's DNA this section draws on]
-**Key scripture(s):** [1-3 scriptures this section will anchor to]
-**Estimated length:** [400-600 words, excluding scripture block]
+**Theme:** [One sentence — what this lesson teaches]
+**Bible Text (anchor):** [Verse reference — e.g. Mark 1:15]
+**Objectives:**
+- [Verb-led outcome 1]
+- [Verb-led outcome 2]
+**Teaching sub-questions:** [e.g. What is repentance? · How is it different from remorse? · What should we do after we repent?]
+**Theological angle:** [Which church-DNA emphasis this draws on]
 
-## Section 2: [Title]
+## Lesson 2: [Title]
 
 [Same structure]
 
 ...
 
-## Conclusion: [Title or "Conclusion"]
+[progressive manuals ONLY — final lesson:]
+## Conclusion: [Memorable phrase]
 
-**Theme:** [How the manual closes — typically a declaration or call to action]
+**Theme:** [How the manual closes — a declaration / call to action]
+**Bible Text (anchor):** [Verse]
 
 ---
 
@@ -80,16 +114,20 @@ Write `[project_directory]/outline.md`:
 
 ## 4. Present for Approval
 
-The orchestrator handles the approval gate. The outliner's job is only to produce the outline.md file. Report: "Outline complete: [N] sections. Waiting for orchestrator to present for user approval."
+The orchestrator handles the approval gate. The outliner's job is only to produce outline.md. Report:
+"Outline complete: [N] lessons ([product model]). Each scaffolded with Bible Text + Objectives.
+Waiting for orchestrator to present for user approval."
 
-## 5. On Approval — Populate Manual DNA Section Structure
+## 5. On Approval — Populate Manual DNA Lesson Structure
 
-When the orchestrator signals approval (it adds `<!-- APPROVED -->` to outline.md), the orchestrator calls the outliner once more with argument `--populate-dna`.
+When the orchestrator signals approval (it adds `<!-- APPROVED -->` to outline.md), it calls the
+outliner once more with argument `--populate-dna`.
 
 On receiving `--populate-dna`:
 1. Read the approved `outline.md`
 2. Read `[project_directory]/manual-dna.md`
-3. Populate the Section Structure table in manual-dna.md with one row per section
+3. Populate the **Lesson Structure** table in manual-dna.md with one row per lesson:
+   `| # | Lesson Title | Core Theme | Bible Text (anchor) |`
 4. Write updated manual-dna.md
 
-Report: "Manual DNA section structure populated."
+Report: "Manual DNA lesson structure populated ([N] lessons)."

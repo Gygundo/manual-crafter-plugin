@@ -50,6 +50,14 @@ Read each file. For each file, extract:
 
 **Scripture anchors** — scriptures quoted repeatedly or treated as foundational. Count citations.
 
+**Stewardship & giving** — how the pastor teaches tithing, offerings, and generosity: the theology
+(e.g. giving as worship/honour), preferred giving scriptures, and the exhortation tone. This feeds the
+**Stewardship & Giving Exhortation** section, which the lesson template's Tithes & Offerings block draws on.
+
+**Teaching & pedagogical posture** — how truth is delivered (felt-need framing, scripture-first,
+declarative voice) and what learners are consistently pushed to DO. This feeds the **Teaching &
+Pedagogical DNA** so the training character is consistent across manuals.
+
 ### Step 3: Synthesise findings
 
 Compile findings across all source files into a structured summary:
@@ -85,6 +93,12 @@ We emphasise:
 ### Scripture Anchors
 | Scripture | Citations | Context |
 ...
+
+### Stewardship & Giving Exhortation
+[Theology of giving, preferred scriptures, exhortation tone — or "not found in sources"]
+
+### Teaching & Pedagogical DNA
+[How truth is delivered and what learners are pushed to DO — or "not found in sources"]
 ```
 
 Ask: "Does this capture your church's theological DNA accurately? You can approve it, add missing positions, remove anything that doesn't fit, or correct any terms before I save it."

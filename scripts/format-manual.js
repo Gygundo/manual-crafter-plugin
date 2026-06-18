@@ -1,14 +1,25 @@
 #!/usr/bin/env node
 /**
- * Manual Crafter — .docx formatter (v2)
- * Usage: node format-manual.js <project_directory> [--workbook]
+ * Manual Crafter — .docx formatter (v3)
+ * Usage: node format-manual.js <project_directory>
  *
  * Reads: manual-dna.md, edited/s*-final.md
- * Writes: output/[Manual Title].docx (and optionally output/[Manual Title] — Workbook.docx)
+ * Writes: output/[Manual Title].docx
  *
- * Layout:
+ * Renders the Maldonado training-manual layout:
  *   Section 1 — Cover page (no header/footer)
- *   Section 2 — Table of Contents + all chapters (header: ministry name, footer: title · page number)
+ *   Section 2 — Table of Contents + all lessons (header: ministry, footer: title · page)
+ *
+ * Lesson markdown contract (see references/lesson-template.md):
+ *   #    → Lesson Title          (Heading 1 — appears in TOC, prefixed with lesson number)
+ *   ##   → Structural label      (Bible Text / Objectives / Introduction / Final Questions /
+ *                                 Application / Activation / Tithes & Offerings / Prayer)
+ *   ###  → Teaching sub-question (bold)
+ *   1.   → Numbered teaching point (bold lead-in preserved via inline parse)
+ *   -    → bullet
+ *   >    → scripture block (indented, italic)
+ *
+ * There is NO workbook / fill-in-the-blank variant.
  */
 
 const {
@@ -22,10 +33,9 @@ const path = require('path');
 // ── Args ──────────────────────────────────────────────────────────────────────
 
 const projectDir = process.argv[2];
-const workbookMode = process.argv.includes('--workbook');
 
 if (!projectDir) {
-  console.error('Usage: node format-manual.js <project_directory> [--workbook]');
+  console.error('Usage: node format-manual.js <project_directory>');
   process.exit(1);
 }
 
@@ -48,7 +58,7 @@ function extractField(content, field) {
   return match ? match[1].trim() : '';
 }
 
-// ── Read section files ────────────────────────────────────────────────────────
+// ── Read lesson files ─────────────────────────────────────────────────────────
 
 function readSections(dir) {
   const editedDir = path.join(dir, 'edited');
@@ -56,7 +66,7 @@ function readSections(dir) {
   const files = fs.readdirSync(editedDir)
     .filter(f => f.match(/^s\d+-.*-final\.md$/))
     .sort();
-  if (files.length === 0) throw new Error('No edited section files found in edited/');
+  if (files.length === 0) throw new Error('No edited lesson files found in edited/');
   return files.map(f => ({
     filename: f,
     content: fs.readFileSync(path.join(editedDir, f), 'utf8'),
@@ -80,106 +90,109 @@ function parseInline(text) {
   return runs;
 }
 
-// ── Workbook blank insertion ──────────────────────────────────────────────────
-
-function applyBlanks(text, startCounter) {
-  const keys = [];
-  let counter = startCounter + 1;
-  const result = text.replace(/\*\*([^*]+)\*\*/g, (_, term) => {
-    keys.push({ number: counter, answer: term });
-    return `_______________ ${counter++}`;
-  });
-  return {
-    para: new Paragraph({ children: parseInline(result), spacing: { before: 140, after: 140 } }),
-    keys,
-  };
+// Strip markdown emphasis markers (for fully-italic scripture blocks)
+function stripEmphasis(text) {
+  return text.replace(/\*\*/g, '').replace(/\*/g, '');
 }
 
-// ── Section markdown parser ───────────────────────────────────────────────────
+const SCRIPTURE_INDENT = {
+  left: convertInchesToTwip(0.5),
+  right: convertInchesToTwip(0.5),
+};
 
-function parseSection(rawContent, sectionIndex, workbook = false) {
+function scriptureParagraph(text) {
+  return new Paragraph({
+    children: [new TextRun({ text: stripEmphasis(text).trim(), italics: true })],
+    spacing: { before: 200, after: 200 },
+    indent: SCRIPTURE_INDENT,
+  });
+}
+
+// A bold, uppercase, letter-spaced structural label (Bible Text, Objectives, …)
+function sectionLabel(text) {
+  return new Paragraph({
+    spacing: { before: 360, after: 140 },
+    keepNext: true,
+    children: [new TextRun({
+      text: text.toUpperCase(),
+      bold: true,
+      size: 22,
+      color: '333355',
+      characterSpacing: 40,
+    })],
+  });
+}
+
+// ── Lesson markdown parser ──────────────────────────────────────────────────────
+
+function parseSection(rawContent, lessonIndex) {
   const content = rawContent.replace(/<!--.*?-->/gs, '').trim();
   const lines = content.split('\n');
   const elements = [];
-  const answerKey = [];
-  let blankCounter = 0;
-  let firstHeading = true;
+  let titleDone = false;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
 
-    if (line.startsWith('## ')) {
-      const titleText = line.replace(/^## /, '');
-      if (firstHeading) {
-        // First ## = chapter title → H1 with section number
-        firstHeading = false;
-        elements.push(new Paragraph({
-          text: `${sectionIndex}.   ${titleText}`,
-          heading: HeadingLevel.HEADING_1,
-          spacing: { before: 0, after: 400 },
-        }));
-      } else {
-        elements.push(new Paragraph({
-          text: titleText,
-          heading: HeadingLevel.HEADING_2,
-          spacing: { before: 400, after: 200 },
-        }));
-      }
-
-    } else if (line.startsWith('### ')) {
+    // Lesson title (#) — only the first single-hash heading
+    if (line.startsWith('# ') && !titleDone) {
+      titleDone = true;
       elements.push(new Paragraph({
-        text: line.replace(/^### /, ''),
-        heading: HeadingLevel.HEADING_3,
-        spacing: { before: 280, after: 140 },
+        text: `${lessonIndex}.   ${line.replace(/^#\s+/, '')}`,
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 0, after: 360 },
       }));
 
+    // Structural section label (##) — not a heading, so it stays out of the TOC
+    } else if (line.startsWith('## ')) {
+      elements.push(sectionLabel(line.replace(/^##\s+/, '')));
+
+    // Teaching sub-question (###) — bold
+    } else if (line.startsWith('### ')) {
+      elements.push(new Paragraph({
+        spacing: { before: 260, after: 120 },
+        keepNext: true,
+        children: [new TextRun({ text: line.replace(/^###\s+/, ''), bold: true, size: 24 })],
+      }));
+
+    // Scripture blockquote (>) — indented italic
+    } else if (line.startsWith('>')) {
+      elements.push(scriptureParagraph(line.replace(/^>\s?/, '')));
+
+    // Numbered teaching point (1. 2. …) — keep the number, bold lead-in via inline parse
+    } else if (/^\d+\.\s/.test(line)) {
+      elements.push(new Paragraph({
+        children: parseInline(line),
+        spacing: { before: 120, after: 120 },
+        indent: { left: convertInchesToTwip(0.25), hanging: convertInchesToTwip(0.25) },
+      }));
+
+    // Bullet (-)
     } else if (line.startsWith('- ')) {
       elements.push(new Paragraph({
-        text: line.replace(/^- /, ''),
+        children: parseInline(line.replace(/^- /, '')),
         bullet: { level: 0 },
         spacing: { before: 80, after: 80 },
       }));
 
+    // Legacy standalone scripture line (*"…"*) — indented italic
     } else if (line.startsWith('*"')) {
-      // Standalone scripture block — indented, italic formatting preserved
-      elements.push(new Paragraph({
-        children: parseInline(line),
-        spacing: { before: 240, after: 240 },
-        indent: {
-          left: convertInchesToTwip(0.5),
-          right: convertInchesToTwip(0.5),
-        },
-      }));
+      elements.push(scriptureParagraph(line));
 
     } else if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**')) {
-      // Short single-line italic (scripture without a reference appendage)
-      elements.push(new Paragraph({
-        children: [new TextRun({ text: line.replace(/^\*|\*$/g, ''), italics: true })],
-        spacing: { before: 240, after: 240 },
-        indent: {
-          left: convertInchesToTwip(0.5),
-          right: convertInchesToTwip(0.5),
-        },
-      }));
+      elements.push(scriptureParagraph(line));
 
+    // Regular paragraph
     } else {
-      // Regular paragraph with inline formatting
-      if (workbook) {
-        const { para, keys } = applyBlanks(line, blankCounter);
-        blankCounter += keys.length;
-        answerKey.push(...keys);
-        elements.push(para);
-      } else {
-        elements.push(new Paragraph({
-          children: parseInline(line),
-          spacing: { before: 140, after: 140 },
-        }));
-      }
+      elements.push(new Paragraph({
+        children: parseInline(line),
+        spacing: { before: 140, after: 140 },
+      }));
     }
   }
 
-  return { elements, answerKey };
+  return { elements };
 }
 
 // ── Cover page ────────────────────────────────────────────────────────────────
@@ -189,46 +202,33 @@ function buildCoverElements(dna) {
 
   els.push(new Paragraph({ text: '', spacing: { before: 2160 } }));
 
-  // Ministry name — small, spaced, muted
   els.push(new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { before: 0, after: 240 },
     children: [new TextRun({
       text: dna.ministry.toUpperCase(),
-      font: 'Georgia',
-      size: 20,
-      color: '999999',
-      characterSpacing: 280,
+      font: 'Georgia', size: 20, color: '999999', characterSpacing: 280,
     })],
   }));
 
-  // Manual type label
   els.push(new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { before: 0, after: 720 },
     children: [new TextRun({
       text: dna.manualType.toUpperCase(),
-      font: 'Georgia',
-      size: 18,
-      color: 'bbbbbb',
-      characterSpacing: 360,
+      font: 'Georgia', size: 18, color: 'bbbbbb', characterSpacing: 360,
     })],
   }));
 
-  // Title — large and bold
   els.push(new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { before: 0, after: 360 },
     children: [new TextRun({
       text: dna.title,
-      font: 'Georgia',
-      size: 72,
-      bold: true,
-      color: '1a1a2e',
+      font: 'Georgia', size: 72, bold: true, color: '1a1a2e',
     })],
   }));
 
-  // Subtitle if meaningful
   const subtitle = dna.subtitle && dna.subtitle !== '[Fill in]' ? dna.subtitle.trim() : '';
   if (subtitle) {
     els.push(new Paragraph({
@@ -236,10 +236,7 @@ function buildCoverElements(dna) {
       spacing: { before: 0, after: 0 },
       children: [new TextRun({
         text: subtitle,
-        font: 'Georgia',
-        size: 32,
-        italics: true,
-        color: '666666',
+        font: 'Georgia', size: 32, italics: true, color: '666666',
       })],
     }));
   }
@@ -296,37 +293,15 @@ function makeFooter(title) {
 
 // ── Build document ────────────────────────────────────────────────────────────
 
-function buildDocument(dna, sections, workbook = false) {
+function buildDocument(dna, sections) {
   const contentElements = [];
-  const allAnswers = [];
 
   contentElements.push(...buildTocElements());
 
   for (let i = 0; i < sections.length; i++) {
     if (i > 0) contentElements.push(new Paragraph({ children: [new PageBreak()] }));
-    const { elements, answerKey } = parseSection(sections[i].content, i + 1, workbook);
+    const { elements } = parseSection(sections[i].content, i + 1);
     contentElements.push(...elements);
-    allAnswers.push(...answerKey);
-  }
-
-  if (workbook && allAnswers.length > 0) {
-    contentElements.push(
-      new Paragraph({ children: [new PageBreak()] }),
-      new Paragraph({
-        text: 'Answer Key',
-        heading: HeadingLevel.HEADING_1,
-        spacing: { before: 0, after: 360 },
-      }),
-      ...allAnswers.map(({ number, answer }) =>
-        new Paragraph({
-          children: [
-            new TextRun({ text: `${number}.  `, bold: true, size: 22 }),
-            new TextRun({ text: answer, size: 22 }),
-          ],
-          spacing: { before: 80, after: 80 },
-        })
-      ),
-    );
   }
 
   const pageMargins = { top: 1440, bottom: 1440, left: 1440, right: 1440 };
@@ -353,7 +328,6 @@ function buildDocument(dna, sections, workbook = false) {
       },
     },
     sections: [
-      // Cover — clean page, no header/footer
       {
         properties: {
           type: SectionType.NEXT_PAGE,
@@ -363,7 +337,6 @@ function buildDocument(dna, sections, workbook = false) {
         footers: { default: new Footer({ children: [] }) },
         children: buildCoverElements(dna),
       },
-      // TOC + chapters — ministry header, title·page footer
       {
         properties: { page: { margin: pageMargins } },
         headers: { default: makeHeader(dna.ministry) },
@@ -383,21 +356,13 @@ async function main() {
   const outputDir = path.join(projectDir, 'output');
   fs.mkdirSync(outputDir, { recursive: true });
 
-  const doc = buildDocument(dna, sections, false);
+  const doc = buildDocument(dna, sections);
   const buffer = await Packer.toBuffer(doc);
   const outputPath = path.join(outputDir, `${dna.title}.docx`);
   fs.writeFileSync(outputPath, buffer);
-  console.log(`✓ Reading version: ${outputPath}`);
+  console.log(`✓ Manual: ${outputPath}`);
 
-  if (workbookMode) {
-    const workbookDoc = buildDocument(dna, sections, true);
-    const workbookBuffer = await Packer.toBuffer(workbookDoc);
-    const workbookPath = path.join(outputDir, `${dna.title} — Workbook.docx`);
-    fs.writeFileSync(workbookPath, workbookBuffer);
-    console.log(`✓ Workbook version: ${workbookPath}`);
-  }
-
-  console.log(`\nDone. ${sections.length} sections formatted.`);
+  console.log(`\nDone. ${sections.length} lessons formatted.`);
 }
 
 main().catch(err => { console.error(err.message); process.exit(1); });

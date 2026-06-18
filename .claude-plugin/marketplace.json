@@ -11,7 +11,7 @@
     {
       "name": "manual-crafter",
       "source": "./",
-      "description": "Builds topical theological training manuals from sermon transcripts or from scratch.",
+      "description": "Builds theological training manuals as lessons in the Maldonado teaching structure — standalone collections or progressive single-topic, with a persistent church DNA and a lesson craft rubric.",
       "strict": true
     }
   ]
