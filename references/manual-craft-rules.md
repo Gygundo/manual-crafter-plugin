@@ -126,11 +126,20 @@ variant was removed from the plugin.)
 ## MANUAL-12 — Scripture Accuracy
 
 Every scripture reference must use a plausible book/chapter/verse format and the church's default
-translation (from the voice profile). The editor cannot look up verse text, so any quotation it is
-uncertain about must be flagged for the user rather than silently passed.
+translation (from the voice profile). Verse text is verified against a real translation via the
+**scripture verifier** (`scripts/verify-scripture.mjs`, source: API.Bible — see
+`references/scripture-verification.md`), which the editor runs in Stage 3. British/SA spelling is
+normalised and faithful partial quotes (excerpts) are accepted.
 
-**Failure mode:** Implausible reference (e.g. John 3:100) → auto-revise the format; uncertain
-quotation → flag in the edit report.
+Run it as `node scripts/verify-scripture.mjs "<project_directory>" --translation NKJV`; it writes
+`reports/scripture-verification.md`. Fold any `CHECK` result into the edit report's Flags. A quote
+tagged for one translation but matching only another (e.g. `(NKJV)` but only the KJV wording) is a
+real error — fix the wording or the tag. If no API key is available the verifier skips gracefully;
+fall back to flagging uncertain quotations for the user rather than passing them silently.
+
+**Failure mode:** Implausible reference (e.g. John 3:100) → auto-revise the format; a verifier
+`CHECK` (wrong words, a clause from another verse, mismatched reference) → flag in the edit report;
+unverifiable (no key) → flag.
 
 ## MANUAL-13 — Stewardship Authenticity
 

@@ -246,20 +246,38 @@ function buildCoverElements(dna) {
 
 // ── Table of contents ─────────────────────────────────────────────────────────
 
-function buildTocElements() {
-  return [
+// Pull the lesson title (first `#` heading) out of a section's markdown.
+function lessonTitle(rawContent) {
+  const stripped = rawContent.replace(/<!--.*?-->/gs, '');
+  const m = stripped.match(/^#\s+(.+)$/m);
+  return m ? m[1].trim() : 'Lesson';
+}
+
+// Static, self-contained table of contents — plain text, NO field codes.
+// (A live `TableOfContents` field makes Word prompt "This document contains
+// fields that may refer to other files" on open. A static list keeps the .docx
+// fully portable — it opens clean with no prompt and no external dependency.)
+function buildTocElements(sections) {
+  const els = [
     new Paragraph({
       text: 'Contents',
       heading: HeadingLevel.HEADING_1,
       pageBreakBefore: true,
       spacing: { before: 0, after: 400 },
     }),
-    new TableOfContents('Contents', {
-      hyperlink: true,
-      headingStyleRange: '1-1',
-    }),
-    new Paragraph({ children: [new PageBreak()] }),
   ];
+  for (let i = 0; i < sections.length; i++) {
+    els.push(new Paragraph({
+      spacing: { before: 60, after: 60 },
+      children: [
+        new TextRun({ text: `${i + 1}.`, bold: true, color: '333355' }),
+        new TextRun({ text: `\t${lessonTitle(sections[i].content)}` }),
+      ],
+      tabStops: [{ type: 'left', position: convertInchesToTwip(0.5) }],
+    }));
+  }
+  els.push(new Paragraph({ children: [new PageBreak()] }));
+  return els;
 }
 
 // ── Header / Footer ───────────────────────────────────────────────────────────
@@ -296,7 +314,7 @@ function makeFooter(title) {
 function buildDocument(dna, sections) {
   const contentElements = [];
 
-  contentElements.push(...buildTocElements());
+  contentElements.push(...buildTocElements(sections));
 
   for (let i = 0; i < sections.length; i++) {
     if (i > 0) contentElements.push(new Paragraph({ children: [new PageBreak()] }));

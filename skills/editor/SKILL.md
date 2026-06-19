@@ -42,9 +42,24 @@ for the user because it is a doctrinal/authorial decision):
 - **MANUAL-05** — orphan teaching claims with no nearby scripture (give the claim + a suggested anchor)
 - **MANUAL-07** — an Objective with no matching Final Question, or a Final Question testing untaught material
 - **MANUAL-09** — a claim that depends on another lesson having been read
-- **MANUAL-12** — scripture references you are uncertain about (you cannot look up verse text — flag, don't guess)
+- **MANUAL-12** — scripture accuracy: run the verifier (see below), then flag any `CHECK` result
 - **MANUAL-13** — foreign/generic giving boilerplate, or a giving block with no stewardship-DNA basis
 - **MANUAL-14** — lessons more than ~30% over or under the length target
+
+### Scripture verification (MANUAL-12)
+
+After editing the lessons, verify every scripture quote against the real translation:
+
+```bash
+node "<plugin>/scripts/verify-scripture.mjs" "[project_directory]" --translation NKJV
+```
+
+It reads the edited lessons, checks each quote against API.Bible, and writes
+`reports/scripture-verification.md` (categories: FAITHFUL / FAITHFUL_EXCERPT / CHECK; British/SA
+spelling is normalised; a `_TAG(XXX)` suffix means the quote was labelled XXX but matched another
+translation). Fold every `CHECK` and `_TAG` item into the Flags section of the edit report. If the
+verifier reports it was skipped (no API key), fall back to flagging uncertain quotations by hand.
+See `references/scripture-verification.md` for the data source and key setup.
 
 Also confirm theological coherence against theological-dna.md (key terms used the church's way;
 nothing contradicting doctrinal positions) and continuity/flow across the set.

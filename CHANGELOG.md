@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.2.0 — 2026-06-19
+
+Scripture quotes are now verified against a real translation, and the .docx is fully portable.
+
+- **New — scripture verification (MANUAL-12 is now enforceable).** `scripts/verify-scripture.mjs`
+  checks every scripture blockquote in the lessons against the live text from **API.Bible**
+  (default NKJV) and writes `reports/scripture-verification.md`. British/SA spelling is normalised
+  and faithful excerpts are accepted; genuine wrong-wording, wrong-verse, and mistagged-translation
+  quotes are surfaced as `CHECK`. The editor (Stage 3) runs it and folds results into the edit
+  report. No API key is stored in the plugin — it resolves from `API_BIBLE_KEY`, `BIBLE_API_KEY`,
+  `~/Development/bible-app/server/.env`, or `BIBLE_APP_ENV`, and skips gracefully if none is found.
+  New reference: `references/scripture-verification.md`.
+- **Fixed — portable .docx (no "fields may refer to other files" prompt).** The formatter no longer
+  emits a live `TableOfContents` field; the Contents page is now static text. The document opens
+  clean with no update-fields dialog and no external dependency. (Footer page numbers use the safe
+  `PAGE` field, which does not trigger the prompt.)
+- Version aligned: `package.json` and `plugin.json` both → 1.2.0.
+
 ## 1.1.0 — 2026-06-18
 
 Manuals are now true training material in the Maldonado lesson structure, and the plugin mirrors
