@@ -57,7 +57,14 @@ Gather from the user:
    Map (a) → `standalone-lessons`, (b) → `progressive`.
    - If `standalone-lessons`: also ask how many lessons (typical sets: 8, 12, 26, 52).
 5. **Lesson configuration** (offer sensible defaults, let the user override):
-   - Leader-action heading: **Application** (default) or **Activation**
+   - **Format mode** — ask:
+     > "Is this manual **(a) facilitated** — a leader teaches it to a group (each lesson ends with
+     > review/discussion questions and leader-led Application/Activation steps) — or **(b) self-study**
+     > — an individual reads it (no group questions, no leader steps; lessons end after the teaching,
+     > with the prayer)?"
+     Map (a) → `facilitated` (default), (b) → `self-study`. In self-study mode the Final Questions and
+     Application/Activation blocks are omitted, and the next two sub-questions (heading label) do not apply.
+   - Leader-action heading *(facilitated only)*: **Application** (default) or **Activation**
    - Tithes & Offerings block: **on** (default) or off — note it requires church Stewardship DNA
    - Prayer block: **on** (default) or off
 6. **Source material** (optional) — directory or file paths with sermon transcripts/notes
@@ -94,8 +101,9 @@ mkdir -p "$MANUAL_DIR"/{sources,ingested,sections,edited,reports,output}
 
 Read `${CLAUDE_PLUGIN_ROOT}/references/manual-dna-template.md`. Write `[MANUAL_DIR]/manual-dna.md`
 with: title, subtitle (if given), topic, target audience, created date, source material list,
-**Product Model**, and the **Lesson Configuration** table (Application label, Tithes & Offerings
-on/off, Prayer on/off, per-lesson length target — default 450–800 words teaching).
+**Product Model**, and the **Lesson Configuration** table (**Format mode** facilitated/self-study,
+Application label, Tithes & Offerings on/off, Prayer on/off, per-lesson length target — default
+450–800 words teaching).
 
 ### Copy voice profile
 
@@ -150,7 +158,8 @@ Directory: ~/Documents/Manuals/[Manual Title]/
 [✓/✗] Voice Profile: [found / using encounter-default]
 
 ### Lesson Configuration
-Leader-action heading: [Application | Activation]
+Format mode: [facilitated | self-study]
+Leader-action heading: [Application | Activation]   (facilitated only)
 Tithes & Offerings: [on | off]   Prayer: [on | off]
 
 ### Pipeline Status

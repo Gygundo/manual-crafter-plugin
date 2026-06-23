@@ -39,18 +39,25 @@ thresholds:
 
 ## Components
 
+> **Format mode.** Score against the elements the manual's **Format mode** actually requires. In
+> `self-study` mode a lesson has no Final Questions and no Application/Activation — their absence is
+> correct and must NOT cost points. Judge only the elements that are configured on.
+
 ### Structural Completeness (0–2)
 Are all required elements present and in canonical order (per `lesson-template.md`)? Bible Text,
-Objectives, Introduction, Teaching Body, Final Questions, Application — plus configured-on Tithes &
-Offerings / Prayer.
-- **2** — every required element present, correctly ordered, correctly formatted.
+Objectives, Introduction, Teaching Body — plus, **in facilitated mode**, Final Questions and
+Application — plus configured-on Tithes & Offerings / Prayer. (In self-study mode, Final
+Questions/Application are correctly absent.)
+- **2** — every element required by the Format mode present, correctly ordered, correctly formatted.
 - **1** — all present but one is thin (e.g. a single objective) or slightly out of order.
-- **0** — a required element is missing. (Also a MANUAL-01 hard-rule failure.)
+- **0** — an element required by the mode is missing. (Also a MANUAL-01 hard-rule failure.)
 
 ### Objective Clarity (0–2)
-Are the Objectives verb-led and measurable, and does each map to a Final Question?
-- **2** — 2–4 sharp, verb-led objectives; every one is testable by a Final Question.
-- **1** — objectives present but vague, or not all mapped to Final Questions.
+Are the Objectives verb-led and measurable? In facilitated mode, does each also map to a Final
+Question?
+- **2** — 2–4 sharp, verb-led objectives (facilitated: each testable by a Final Question; self-study:
+  each clearly delivered by the teaching body).
+- **1** — objectives present but vague, or (facilitated) not all mapped to Final Questions.
 - **0** — objectives missing, not verb-led, or unrelated to what the lesson actually teaches.
 
 ### Scriptural Anchoring (0–2)
@@ -73,10 +80,14 @@ register, and zero Avoid-list words?
 - **0** — academic, hedged, generic-AI, or uses Avoid-list vocabulary.
 
 ### Application Strength (0–2)
-Are the Application/Activation steps leader-facing, concrete, and genuinely actionable?
-- **2** — specific leader action steps that turn the lesson into practice (pray, guide, declare, assign).
+**Facilitated mode:** are the Application/Activation steps leader-facing, concrete, and genuinely
+actionable? **Self-study mode:** there is no Application block — score this on how well the lesson
+moves the reader from knowing to doing through its closing (the Prayer as a personal response, and/or
+a teaching body that lands on lived implication).
+- **2** — (facilitated) specific leader action steps that turn the lesson into practice; or
+  (self-study) a closing that genuinely calls the reader to live the truth, not just feel it.
 - **1** — actionable but generic, or partly a restatement of the teaching.
-- **0** — vague encouragement, or just re-teaches with no action.
+- **0** — vague encouragement, or just re-teaches with no movement toward practice.
 
 ### Self-Containment & Accessibility (0–2)
 Does the lesson teach fully on its own, in language a church member (not a seminarian) can follow?

@@ -25,6 +25,12 @@ Read all of the following:
 
 ## 2. Editing Pass — Enforce the Craft Rules
 
+First read the **Format mode** from `manual-dna.md` (Lesson Configuration). In **`self-study`** mode,
+lessons correctly have **no Final Questions and no Application/Activation** — do NOT add them and do
+NOT flag their absence (MANUAL-01/-07/-08 treat them as not-applicable). The `## Bible Text` marker is
+present but renders unlabelled; that is correct. In **`facilitated`** mode, enforce all rules as
+written.
+
 For each lesson in order, work through every rule in `manual-craft-rules.md`:
 
 **Auto-revise rules** (rewrite the lesson in place to satisfy the rule):

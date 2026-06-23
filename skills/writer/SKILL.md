@@ -46,8 +46,10 @@ scaffold as your spine.
 
 ### Element-by-element
 
-- **Bible Text** — the anchor verse from the outline, quoted in full, italic blockquote, with
-  reference + translation: `> *"…"* — Ref (NKJV)`. Exactly one verse (MANUAL-02).
+- **Bible Text** — emit the `## Bible Text` marker, then the anchor verse from the outline, quoted in
+  full, italic blockquote, with reference + translation: `> *"…"* — Ref (NKJV)`. Exactly one verse
+  (MANUAL-02). The label is not rendered — the verse shows directly under the title — but still emit
+  the `## Bible Text` marker so the structure parses.
 - **Objectives** — 2–4 verb-led, measurable bullets (MANUAL-03). Use/refine the outline's objectives.
 - **Introduction** — open on the reader's felt need addressed to "you"; do NOT open with a definition;
   end pointing at the lesson (MANUAL-04).
@@ -71,20 +73,29 @@ scaffold as your spine.
 
   Build definition → depth → implication. Use teaching from `topic-extract.md` where it fits, but
   synthesise and rewrite — never copy transcript prose verbatim.
-- **Final Questions** — 2–4 review questions that map to the Objectives (MANUAL-07).
-- **Application / Activation** — leader-facing action steps (MANUAL-08), using the label set in the
-  Lesson Configuration. "The leader will guide…", "Pray with each person…", "Lead the group to declare…".
+- **Final Questions** *(facilitated mode only — OMIT entirely in self-study)* — 2–4 review questions
+  that map to the Objectives (MANUAL-07).
+- **Application / Activation** *(facilitated mode only — OMIT entirely in self-study)* — leader-facing
+  action steps (MANUAL-08), using the label set in the Lesson Configuration. "The leader will guide…",
+  "Pray with each person…", "Lead the group to declare…".
+
+> **Format mode (from `manual-dna.md` → Lesson Configuration).** In **`self-study`** mode do NOT write
+> Final Questions or Application/Activation at all — the lesson runs Title → Bible Text → Objectives →
+> Introduction → Teaching Body → (configured-on Tithes & Offerings / Prayer). In **`facilitated`** mode
+> write both as above.
 - **Tithes & Offerings** *(only if configured ON)* — one giving scripture + 2–4 sentences of
   exhortation drawn from the church's **Stewardship & Giving Exhortation** DNA, in the church's voice
   (MANUAL-13). If the church has no stewardship DNA, write a brief `<!-- FLAG: no stewardship DNA -->`
   note instead of inventing giving theology, and tell the orchestrator.
-- **Prayer** *(only if configured ON, and where it isn't redundant with Application)* — a 40–120 word
-  written prayer the leader prays aloud, gathering the lesson into a declaration + request.
+- **Prayer** *(only if configured ON)* — a 40–120 word written prayer, gathering the lesson into a
+  declaration + request. In facilitated mode the leader prays it aloud; in self-study the reader prays
+  it. (In facilitated mode, skip only where it would be redundant with Application.)
 
 ### Conclusion lessons (progressive manuals)
 If the lesson title begins with `Conclusion:` — keep Bible Text, a short Introduction, and a brief
 teaching recap, but introduce NO new doctrine. Name what the reader now possesses and close on a call
-to action. Objectives/Final Questions may be lighter or omitted for a conclusion; keep Application.
+to action. Objectives/Final Questions may be lighter or omitted for a conclusion; in facilitated mode
+keep Application, in self-study mode omit it (the call to action lives in the recap + Prayer).
 
 ### Length
 Hit the per-lesson teaching target from the Lesson Configuration (default 450–800 words of teaching,

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0 — 2026-06-23
+
+Manuals can now be built for self-study, and the Bible Text heading is gone.
+
+- **New — Format mode (`facilitated` | `self-study`).** The orchestrator asks at creation. `facilitated`
+  (default) is leader-led group material with **Final Questions** + **Application/Activation**.
+  `self-study` is for an individual reader: both of those blocks are omitted, so a lesson runs Title →
+  verse → Objectives → Introduction → Teaching Body → (Tithes & Offerings / Prayer if on). The writer,
+  editor, craft rules (MANUAL-01/-07/-08), and rubric all honour the mode — absent blocks in
+  self-study are not-applicable, never a failure.
+- **Changed — Bible Text heading removed.** The anchor verse now renders **unlabelled**, directly
+  beneath the lesson title (no "Bible Text" heading in the output). The writer still emits the
+  `## Bible Text` marker so the structure stays parseable; the formatter suppresses the label. Applies
+  to all manuals.
+- Version → 1.3.0.
+
 ## 1.2.0 — 2026-06-19
 
 Scripture quotes are now verified against a real translation, and the .docx is fully portable.

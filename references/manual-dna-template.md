@@ -33,10 +33,14 @@ Controls which configurable elements of the lesson template appear in this manua
 
 | Setting | Value | Notes |
 |---------|-------|-------|
-| Application label | [`Application` \| `Activation`] | Heading used for the leader-action block |
+| Format mode | [`facilitated` \| `self-study`] | Default `facilitated`. `facilitated` = leader teaches a group (Final Questions + Application/Activation ON). `self-study` = individual reader (both OFF). |
+| Application label | [`Application` \| `Activation`] | Heading used for the leader-action block (facilitated mode only) |
 | Tithes & Offerings block | [`on` \| `off`] | Default `on`; requires church Stewardship DNA |
 | Prayer block | [`on` \| `off`] | Default `on` (skipped per-lesson where redundant) |
 | Per-lesson length target | [e.g. 450–800 words teaching] | Excludes scripture/objectives/questions |
+
+> The **Bible Text** anchor verse is always rendered unlabelled (directly under the lesson title);
+> there is no "Bible Text" heading in the output.
 
 ---
 

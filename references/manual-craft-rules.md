@@ -31,17 +31,21 @@
 ## MANUAL-01 — Element Completeness & Order
 
 Every lesson MUST contain, in this order: Lesson Title (`#`), Bible Text, Objectives, Introduction,
-Teaching Body, Final Questions, Application/Activation, and — if the manual configures them on —
-Tithes & Offerings and Prayer. See `lesson-template.md` § The Canonical Lesson Element Order.
+Teaching Body, then — **in `facilitated` mode** — Final Questions and Application/Activation, and — if
+the manual configures them on — Tithes & Offerings and Prayer. In **`self-study` mode** the lesson has
+NO Final Questions and NO Application/Activation (it ends after the Teaching Body, then any
+configured-on Tithes & Offerings / Prayer). See `lesson-template.md` § Format mode.
 
 **Failure mode:** A missing required element or an out-of-order element → auto-revise (insert /
-reorder). A missing *configurable* element that the manual turned OFF is not a failure.
+reorder). A missing element that the manual's Format mode or Lesson Configuration turned OFF is NOT a
+failure (e.g. no Final Questions/Activation in self-study, no Tithes & Offerings when off).
 
 ## MANUAL-02 — Bible Text Discipline
 
 Exactly **one** anchor verse at the top of the lesson, quoted in full, italic, blockquote, with
 reference and translation: `> *"…"* — John 3:16 (NKJV)`. Not two verses, not a paraphrase, not a
-bare reference.
+bare reference. The writer still emits the `## Bible Text` marker (so the structure parses), but it is
+rendered **unlabelled** — the verse appears directly under the lesson title.
 
 **Failure mode:** Zero or multiple anchor verses, missing reference, or missing translation →
 auto-revise.
@@ -81,20 +85,22 @@ scaffold. At least one sub-question OR one numbered list is required; most lesso
 **Failure mode:** Body with no sub-questions and no numbered structure → auto-revise (impose
 question/point structure on the existing content).
 
-## MANUAL-07 — Final Questions Map to Objectives
+## MANUAL-07 — Final Questions Map to Objectives *(facilitated mode only)*
 
-Each Objective should be testable by at least one Final Question, and each Final Question should
-trace to a point actually taught in the lesson. Final Questions are recall/comprehension checks,
-not new teaching.
+In **facilitated** mode, each Objective should be testable by at least one Final Question, and each
+Final Question should trace to a point actually taught in the lesson. Final Questions are
+recall/comprehension checks, not new teaching. In **self-study** mode there are no Final Questions and
+this rule does not apply.
 
-**Failure mode:** An Objective with no corresponding Final Question, or a Final Question that
-introduces untaught material → flag.
+**Failure mode:** (facilitated only) An Objective with no corresponding Final Question, or a Final
+Question that introduces untaught material → flag.
 
-## MANUAL-08 — Application Is Leader-Facing & Actionable
+## MANUAL-08 — Application Is Leader-Facing & Actionable *(facilitated mode only)*
 
-Application/Activation steps describe what the leader DOES with the group — pray, guide, lead a
-declaration, make a call, assign practice. Phrased in the leader's voice ("The leader will…", "Pray
-with each person…"). Not a restatement of the teaching; not vague encouragement.
+In **facilitated** mode, Application/Activation steps describe what the leader DOES with the group —
+pray, guide, lead a declaration, make a call, assign practice. Phrased in the leader's voice ("The
+leader will…", "Pray with each person…"). Not a restatement of the teaching; not vague encouragement.
+In **self-study** mode there is no Application/Activation block and this rule does not apply.
 
 **Failure mode:** Application that merely re-teaches or offers vague encouragement → auto-revise into
 concrete leader action steps.

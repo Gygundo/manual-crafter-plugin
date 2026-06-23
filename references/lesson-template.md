@@ -33,14 +33,28 @@ Every lesson is written in this exact order. Elements marked **(required)** appe
 **(configurable)** elements are toggled per manual in `manual-dna.md` (Lesson Configuration).
 
 1. **Lesson Title** *(required)*
-2. **Bible Text** *(required)* — one anchor verse
+2. **Bible Text** *(required)* — one anchor verse. **Rendered unlabelled** — the verse appears
+   directly beneath the lesson title with no "Bible Text" heading in the output. (The writer still
+   emits the `## Bible Text` marker so the structure is parseable; the formatter suppresses the label.)
 3. **Objectives** *(required)* — 2–4 learner outcomes
 4. **Introduction** *(required)* — frames the felt need, ends pointing at the lesson
 5. **Teaching Body** *(required)* — sub-questions + numbered points, every claim scripture-anchored
-6. **Final Questions** *(required)* — 2–4 review questions
-7. **Application / Activation** *(required)* — leader-facing action steps
+6. **Final Questions** *(configurable — facilitated mode)* — 2–4 review/discussion questions
+7. **Application / Activation** *(configurable — facilitated mode)* — leader-facing action steps
 8. **Tithes & Offerings** *(configurable — default ON)* — giving scripture + short exhortation
-9. **Prayer** *(configurable — default ON where the topic calls for it)* — a written prayer the leader can pray aloud
+9. **Prayer** *(configurable — default ON where the topic calls for it)* — a written prayer to pray aloud
+
+### Format mode (facilitated vs self-study)
+
+`manual-dna.md` sets a **Format mode** that controls the two group-facing elements:
+
+- **`facilitated`** *(default)* — the manual is taught by a leader to a group. **Final Questions**
+  and **Application/Activation** are BOTH ON.
+- **`self-study`** — the manual is read by an individual. **Final Questions** and
+  **Application/Activation** are BOTH OFF (a self-study lesson ends after the Teaching Body, then any
+  configured-on Tithes & Offerings / Prayer).
+
+Bible Text, Objectives, Introduction, Teaching Body are always present in both modes.
 
 ## The Markdown Contract
 
@@ -56,11 +70,13 @@ parses it deterministically. Headings carry structural meaning:
 
 The fixed `##` labels, in order, are exactly:
 `Bible Text`, `Objectives`, `Introduction`, `Final Questions`, `Application` (or `Activation`),
-`Tithes & Offerings`, `Prayer`.
+`Tithes & Offerings`, `Prayer`. The `## Bible Text` marker is emitted but **not rendered as a
+heading** (the verse shows under the title). In **self-study** mode, `Final Questions` and
+`Application`/`Activation` are omitted entirely.
 
-**The teaching body has no `##` label.** Everything between the Introduction's content and the
-`## Final Questions` heading is the teaching body. This mirrors the source manuals, where teaching
-flows directly out of the introduction.
+**The teaching body has no `##` label.** Everything between the Introduction's content and the next
+`##` label (Final Questions in facilitated mode; Tithes & Offerings or Prayer in self-study) is the
+teaching body. This mirrors the source manuals, where teaching flows directly out of the introduction.
 
 ### Full skeleton
 

@@ -146,7 +146,12 @@ function parseSection(rawContent, lessonIndex) {
 
     // Structural section label (##) — not a heading, so it stays out of the TOC
     } else if (line.startsWith('## ')) {
-      elements.push(sectionLabel(line.replace(/^##\s+/, '')));
+      const label = line.replace(/^##\s+/, '');
+      // The "Bible Text" marker is intentionally NOT rendered as a heading — the
+      // anchor verse appears directly beneath the lesson title (see lesson-template.md).
+      if (label.toLowerCase() !== 'bible text') {
+        elements.push(sectionLabel(label));
+      }
 
     // Teaching sub-question (###) — bold
     } else if (line.startsWith('### ')) {
